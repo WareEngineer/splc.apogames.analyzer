@@ -31,6 +31,7 @@ public class Parser {
 			List<Token> tokens = new Tokenizer(path).getTokens();
 			Stack<ClassModel> classes = new Stack<ClassModel>();
 			Stack<String> blocks = new Stack<String>();
+			Set<String> importList = new HashSet<String>();
 			String packageName = "";
 			ClassModel mClass = null;
 			MethodModel mMethod = null;
@@ -49,9 +50,13 @@ public class Parser {
 							structure.put(packageName, new ArrayList<ClassModel>() );
 						}
 						break;
+					case "import":
+						importList.add((String) map.get("path"));
+						break;
 					case "class": case "interface": case "enum":
 						blocks.push("object");
 						map.put("package", packageName);
+						map.put("imports", importList);
 						mClass = new ClassModel(map);
 						classes.push(mClass);
 						break;

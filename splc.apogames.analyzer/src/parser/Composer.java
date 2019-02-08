@@ -11,6 +11,9 @@ import java.util.List;
 public class Composer {
 	private boolean isPackage;
 	private Map<String, Object> packageMap;
+
+	private boolean isImport;
+	private Map<String, Object> importMap;
 	
 	private int classStep;
 	private int classGeneticCount;
@@ -120,6 +123,11 @@ public class Composer {
 			count++;
 		}
 		
+		if (composeImport(token)) {
+			tmp = importMap;
+			count++;
+		}
+		
 		if (composeClass(token)) {
 			tmp = classMap;
 			count++;
@@ -160,6 +168,23 @@ public class Composer {
 				return true;
 			}
 			packageMap.replace("path", packageMap.get("path") + token.getId());
+		}
+		
+		return false;
+	}
+	
+	private boolean composeImport(Token token) {
+		if ("import".equals(token.getId())) {
+			isImport = true;
+			importMap = new HashMap<String, Object>();
+			importMap.put("TYPE", "import");
+			importMap.put("path", "");
+		} else if (isImport) {
+			if (";".equals(token.getId())) {
+				isImport = false;
+				return true;
+			}
+			importMap.replace("path", importMap.get("path") + token.getId());
 		}
 		
 		return false;

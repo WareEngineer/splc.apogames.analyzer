@@ -13,7 +13,7 @@ public class ClassModel {
 	private String myType;
 	private String myPerspective;
 	private String myPackage;
-//	private Set<String> myImports;
+	private Set<String> myImports;
 	private String myId;
 	private List<String> myExtends;
 	private List<String> myImplements;
@@ -31,6 +31,9 @@ public class ClassModel {
 			switch(key) {
 			case "package": 
 				myPackage = (String) map.get("package");
+				break;
+			case "imports":
+				myImports = (Set<String>) map.get("imports");	
 				break;
 			case "perspective":
 				myPerspective = key;
@@ -51,6 +54,10 @@ public class ClassModel {
 		}
 	}
 	
+	public Set<String> getImports() {
+		return myImports;
+	}
+	
 	public String getClassName() {
 		return myId;
 	}
@@ -58,7 +65,7 @@ public class ClassModel {
 	public Set<String> getRelations() {
 		return myRelations;
 	}
-
+	
 	public void addMethod(MethodModel method) {
 		myMethods.add(method);
 	}
@@ -72,6 +79,9 @@ public class ClassModel {
 		buffer.append("[" + myType + "]");
 		buffer.append(myPerspective+" "+myId);
 		buffer.append("\n  |=>Package    :" + myPackage);
+		if (myImports != null) {
+			buffer.append( String.format("\n  |=>%-10s : %s", "Imports", myImports.toString()) );
+		}
 		if (myExtends != null) {
 			buffer.append( String.format("\n  |=>%-10s : %s", "Extends", myExtends.toString()) );
 		}
@@ -98,16 +108,28 @@ public class ClassModel {
 	}
 
 	public void optimize() {
-		myRelations.addAll(myExtends);
-		myRelations.addAll(myImplements);
+//		myRelations.addAll(myExtends);
+//		myRelations.addAll(myImplements);
 		
 		for (MethodModel method : myMethods) {
 			method.addClassAttributes(myAttribute);
 			myRelations.addAll(method.getRelations());
 		}
 		
+//		System.out.println(this.toString());
 //		System.out.print("    " + myId);
 //		System.out.println("=>" + myRelations);
+	}
+	
+	public boolean equals(ClassModel other) {
+		String s1 = this.myPackage + this.myId;
+		String s2 = other.myPackage + other.myId;
+		
+		if (s1.equals(s2)) {
+			return true;
+		} 
+		
+		return false;
 	}
 
 }
