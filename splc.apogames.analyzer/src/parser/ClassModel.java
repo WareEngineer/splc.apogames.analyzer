@@ -54,6 +54,10 @@ public class ClassModel {
 		}
 	}
 	
+	public String getPackageName() {
+		return myPackage;
+	}
+	
 	public Set<String> getImports() {
 		return myImports;
 	}
