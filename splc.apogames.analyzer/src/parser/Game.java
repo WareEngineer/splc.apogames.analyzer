@@ -17,10 +17,10 @@ public class Game {
 	private Set<ClassModel> allClasses;
 	private Set<ClassModel> writtenClasses;
 	private Set<ClassModel> clonedClasses;
-	private Set<ClassModel> invokedClassesReal2Reuse;
+	private Set<String> reusedClasses;
 	
-	public Set<ClassModel> getAllClassNames() {
-		return allClasses;
+	public Set<String> getReusedClasses() {
+		return reusedClasses;
 	}
 	
 	public Game(String title, Map<String, List<ClassModel>> architecture) {
@@ -42,9 +42,13 @@ public class Game {
 			}
 		}
 		
-		Set<String> reusedClasses = new HashSet<String>();
+		setReusedClasses();
+	}
+	
+	private void setReusedClasses() {
 		Queue<ClassModel> queue = new LinkedList<ClassModel>();
 		queue.addAll(writtenClasses);
+		reusedClasses = new HashSet<String>();
 		
 		while( !queue.isEmpty() ) {
 			ClassModel mClass = queue.poll();
@@ -71,8 +75,10 @@ public class Game {
 			Set<String> extractedImportStatements = importStatements.stream()
 																	.filter(name -> name.startsWith("org."))
 																	.collect(Collectors.toSet());
-			
+
+//			System.out.println(mClass.getPackageName()+" : "+mClass.getClassName());
 			for(String statement : extractedImportStatements) {
+//				System.out.println("\t" + statement);
 				if( !reusedClasses.contains(statement) ) {
 					int pos = statement.lastIndexOf('.');
 					String pName = statement.substring(0, pos);
@@ -86,45 +92,49 @@ public class Game {
 				}
 			}
 			
-			System.out.println(mClass.getPackageName() + ":" + mClass.getClassName() + "->");
+//			System.out.println(mClass.getPackageName() + ":" + mClass.getClassName() + "->");
 		}
+	}
+	
+	public String toString() {
+		String s = String.format("***%-20s  [WRITTEN:%3d, CLONED:%3d, ALL:%3d]  => REUSED:%d ", 
+								 this.title, 
+								 this.writtenClasses.size(), 
+								 this.clonedClasses.size(), 
+								 this.allClasses.size(), 
+								 reusedClasses.size()
+								);
 		
-		
-//		for (ClassModel mClass : writtenClasses) {
-//			Set<String> importStatements = mClass.getImports().stream().filter(name -> name.startsWith("org.")).collect(Collectors.toSet());
-//			
-//			// import문에서 * 사용한 경우 처리
-//			for (String s : importStatements) {
-//				if ( s.endsWith(".*") ) {
-//					int pos = s.lastIndexOf(".");
-//					String pName = s.substring(0, pos);
-//					
-//					List<ClassModel> classList = architecture.get(pName);
-//					for (ClassModel c : classList) {
-//						String statement = pName + c.getClassName();
-//						importStatements.add(statement);
-//					}
-//				}
-//				
-//			}
-//			
-//			usedClasses.addAll(importStatements);
-//		}
-		
-		String s = String.format("***%-20s  [WRITTEN: %2d, CLONED:%2d, ALL:%2d]", this.title, this.writtenClasses.size(), this.clonedClasses.size(), this.allClasses.size());
-		System.out.println(s);
-		System.out.println("   => " + reusedClasses.size());
+		return s;
 	}
 }
 
 
 
 
-
-
-
-
-
+//
+//reusedClasses = new HashSet<String>();
+//
+//for (ClassModel mClass : writtenClasses) {
+//	Set<String> importStatements = mClass.getImports().stream().filter(name -> name.startsWith("org.")).collect(Collectors.toSet());
+//	
+//	// import문에서 * 사용한 경우 처리
+//	for (String s : importStatements) {
+//		if ( s.endsWith(".*") ) {
+//			int pos = s.lastIndexOf(".");
+//			String pName = s.substring(0, pos);
+//			
+//			List<ClassModel> classList = architecture.get(pName);
+//			for (ClassModel c : classList) {
+//				String statement = pName + c.getClassName();
+//				importStatements.add(statement);
+//			}
+//		}
+//		
+//	}
+//	
+//	reusedClasses.addAll(importStatements);
+//}
 
 
 
