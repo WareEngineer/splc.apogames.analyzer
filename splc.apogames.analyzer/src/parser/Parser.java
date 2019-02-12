@@ -86,7 +86,6 @@ public class Parser {
 					blocks.pop();
 					if ("object".equals(blocks.peek())) {
 						List<ClassModel> classList = structure.get(packageName);
-						classes.peek().optimize();
 						classList.add(classes.pop());
 						blocks.pop();
 					} else if("method".equals(blocks.peek())) {

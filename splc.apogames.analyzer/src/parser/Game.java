@@ -1,6 +1,7 @@
 package parser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -14,26 +15,36 @@ import java.util.stream.Collectors;
 public class Game {
 	private final String title;
 	private final Map<String, List<ClassModel>> architecture;
+	private Set<String> allClassPaths;
 	private Set<ClassModel> allClasses;
 	private Set<ClassModel> writtenClasses;
 	private Set<ClassModel> clonedClasses;
-	private Set<String> reusedClasses;
+	private Set<ClassModel> reusedClasses;
+	private Map<String, List<String>> relations;
 	
-	public Set<String> getReusedClasses() {
-		return reusedClasses;
+	public Set<ClassModel> getReusedClasses() {
+		return this.reusedClasses;
+	}
+	
+	public Map<String, List<String>> getRelations() {
+		return this.relations;
 	}
 	
 	public Game(String title, Map<String, List<ClassModel>> architecture) {
 		this.title = title;
 		this.architecture = architecture;
+		this.allClassPaths = new HashSet<String>();
 		this.allClasses = new HashSet<ClassModel>();
 		this.writtenClasses = new HashSet<ClassModel>();
 		this.clonedClasses = new HashSet<ClassModel>();
+		this.reusedClasses = new HashSet<ClassModel>();
+		this.relations = new HashMap<String, List<String>>();
 		
 		for(String packageName : architecture.keySet()) {
 			List<ClassModel> classes = architecture.get(packageName);
 			for (ClassModel mClass : classes) {
 				allClasses.add(mClass);
+				allClassPaths.add(mClass.getPath());
 				if (packageName.startsWith("org.")) {
 					clonedClasses.add(mClass);
 				} else {
@@ -42,99 +53,79 @@ public class Game {
 			}
 		}
 		
-		setReusedClasses();
-	}
-	
-	private void setReusedClasses() {
 		Queue<ClassModel> queue = new LinkedList<ClassModel>();
+		Set<String> visitedPath = new HashSet<String>();
 		queue.addAll(writtenClasses);
-		reusedClasses = new HashSet<String>();
 		
 		while( !queue.isEmpty() ) {
 			ClassModel mClass = queue.poll();
-			Set<String> importStatements = mClass.getImports(); //.stream().filter(name -> name.startsWith("org.")).collect(Collectors.toSet());
-			Set<String> usedTypes = mClass.getRelations();
+			visitedPath.add(mClass.getPath());
 			
-			Set<String> implicitImportTypes = new HashSet<String>(usedTypes);
-			for(String statement : importStatements) {
-				int beginIndex = statement.lastIndexOf('.') + 1;
-				String className = statement.substring(beginIndex);
-				if ( usedTypes.contains(className) ) {
-					implicitImportTypes.remove(className);
+			Set<String> paths = this.getRelationFromClassToPackage(mClass, "org.");
+			for(String path : paths) {
+				if( mClass.getPath().startsWith("org.") ) {
+					if( !relations.containsKey(mClass.getPath()) ) {
+						relations.put(mClass.getPath(), new ArrayList<String>());
+					}
+					relations.get(mClass.getPath()).add(path);
+				} else {	// 구현 클래스에서 org 클래스를 호출하는 경우
+					if( !relations.containsKey("#GAME") ) {
+						relations.put("#GAME", new ArrayList<String>());
+					}
+					relations.get("#GAME").add(path);
 				}
-			}
-			
-			for(ClassModel c : architecture.get(mClass.getPackageName())) {
-				String pName = c.getPackageName();
-				String cName = c.getClassName();
-				if(implicitImportTypes.contains(cName)) {
-					importStatements.add( pName+"."+cName );
-				}
-			}
-			
-			Set<String> extractedImportStatements = importStatements.stream()
-																	.filter(name -> name.startsWith("org."))
-																	.collect(Collectors.toSet());
-
-//			System.out.println(mClass.getPackageName()+" : "+mClass.getClassName());
-			for(String statement : extractedImportStatements) {
-//				System.out.println("\t" + statement);
-				if( !reusedClasses.contains(statement) ) {
-					int pos = statement.lastIndexOf('.');
-					String pName = statement.substring(0, pos);
-					String cName = statement.substring(pos+1);
+				
+				if( !visitedPath.contains(path) ) {
+					int pos = path.lastIndexOf('.');
+					String pName = path.substring(0, pos);
+					String cName = path.substring(pos+1);
 					for(ClassModel c : architecture.get(pName)) {
 						if(c.getClassName().equals(cName)) {
 							queue.offer(c);
+							reusedClasses.add(c);
 						}
 					}
-					reusedClasses.add(statement);
 				}
 			}
-			
-//			System.out.println(mClass.getPackageName() + ":" + mClass.getClassName() + "->");
 		}
 	}
 	
+	private Set<String> getRelationFromClassToPackage(ClassModel from, String to) {
+		Set<String> importStatements = from.getImports();
+		Set<String> usedTypes = from.getRelations();
+		
+		Set<String> implicitImportTypes = new HashSet<String>(usedTypes);
+		for( String statement : importStatements ) {
+			int beginIndex = statement.lastIndexOf('.') + 1;
+			String className = statement.substring(beginIndex);
+			if( implicitImportTypes.contains(className) ) {
+				implicitImportTypes.remove(className);
+			}
+		}
+		
+		for(String type : implicitImportTypes) {
+			String statement = from.getPackageName() + "." + type;
+			if(allClassPaths.contains(statement)) {
+				importStatements.add(statement);
+			}
+		}
+		
+		return importStatements.stream().filter(name -> name.startsWith(to)).collect(Collectors.toSet());
+	}
+
 	public String toString() {
-		String s = String.format("***%-20s  [WRITTEN:%3d, CLONED:%3d, ALL:%3d]  => REUSED:%d ", 
+		String s = String.format("***%-15s  [WRITTEN:%3d, CLONED:%3d, ALL:%3d]  => REUSED:%2d,  UNUSED:%2d", 
 								 this.title, 
 								 this.writtenClasses.size(), 
 								 this.clonedClasses.size(), 
 								 this.allClasses.size(), 
-								 reusedClasses.size()
+								 this.reusedClasses.size(),
+								 this.clonedClasses.size() - this.reusedClasses.size()
 								);
 		
 		return s;
 	}
 }
-
-
-
-
-//
-//reusedClasses = new HashSet<String>();
-//
-//for (ClassModel mClass : writtenClasses) {
-//	Set<String> importStatements = mClass.getImports().stream().filter(name -> name.startsWith("org.")).collect(Collectors.toSet());
-//	
-//	// import문에서 * 사용한 경우 처리
-//	for (String s : importStatements) {
-//		if ( s.endsWith(".*") ) {
-//			int pos = s.lastIndexOf(".");
-//			String pName = s.substring(0, pos);
-//			
-//			List<ClassModel> classList = architecture.get(pName);
-//			for (ClassModel c : classList) {
-//				String statement = pName + c.getClassName();
-//				importStatements.add(statement);
-//			}
-//		}
-//		
-//	}
-//	
-//	reusedClasses.addAll(importStatements);
-//}
 
 
 

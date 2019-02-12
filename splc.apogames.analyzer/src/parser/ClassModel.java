@@ -14,18 +14,17 @@ public class ClassModel {
 	private String myPerspective;
 	private String myPackage;
 	private Set<String> myImports;
+	private Set<String> myImplicitImports;
 	private String myId;
 	private List<String> myExtends;
 	private List<String> myImplements;
 	private List<MethodModel> myMethods;
-	private Map<String, String> myAttribute;
-	private Set<String> myRelations;
+	private Map<String, String> myAttributes;
 //	private Map<String, List<String>> sendingMessages;
 	
 	public ClassModel(Map<String, Object> map) {
 		myMethods = new ArrayList<MethodModel>();
-		myAttribute = new HashMap<String, String>();
-		myRelations = new HashSet<String>();
+		myAttributes = new HashMap<String, String>();
 		
 		for (String key : map.keySet()) {
 			switch(key) {
@@ -54,6 +53,28 @@ public class ClassModel {
 		}
 	}
 	
+	public String getPath() {
+		if ( "".equals(myPackage) ) {
+			return myId;
+		}
+		else {
+			return myPackage+"."+myId;
+		}
+	}
+
+	public Set<String> getRelations() {
+		Set<String> myRelations = new HashSet<String>();
+		myRelations.addAll(myExtends);
+		myRelations.addAll(myImplements);
+		
+		for (MethodModel method : myMethods) {
+			method.addClassAttributes(myAttributes);
+			myRelations.addAll(method.getRelations());
+		}
+		
+		return myRelations;
+	}
+	
 	public String getPackageName() {
 		return myPackage;
 	}
@@ -66,8 +87,8 @@ public class ClassModel {
 		return myId;
 	}
 	
-	public Set<String> getRelations() {
-		return myRelations;
+	public List<MethodModel> getMethods() {
+		return myMethods;
 	}
 	
 	public void addMethod(MethodModel method) {
@@ -75,7 +96,7 @@ public class ClassModel {
 	}
 	
 	public void addAttribute(Map<String, Object> map) {
-		myAttribute.put( (String) map.get("identifier"), (String) map.get("dataType") );
+		myAttributes.put( (String) map.get("identifier"), (String) map.get("dataType") );
 	}
 	
 	public String toString() {
@@ -100,29 +121,15 @@ public class ClassModel {
 			}
 		}
 		
-		if (myAttribute != null) {
+		if (myAttributes != null) {
 			buffer.append( String.format("\n  |=>%-10s : ", "Attribute") );
-			for (String key : myAttribute.keySet()) {
-				buffer.append( "\n  |  " + myAttribute.get(key) + " " + key );
+			for (String key : myAttributes.keySet()) {
+				buffer.append( "\n  |  " + myAttributes.get(key) + " " + key );
 			}
 		}
 		buffer.append("\n");
 		
 		return buffer.toString();
-	}
-
-	public void optimize() {
-//		myRelations.addAll(myExtends);
-//		myRelations.addAll(myImplements);
-		
-		for (MethodModel method : myMethods) {
-			method.addClassAttributes(myAttribute);
-			myRelations.addAll(method.getRelations());
-		}
-		
-//		System.out.println(this.toString());
-//		System.out.print("    " + myId);
-//		System.out.println("=>" + myRelations);
 	}
 	
 	public boolean equals(ClassModel other) {
