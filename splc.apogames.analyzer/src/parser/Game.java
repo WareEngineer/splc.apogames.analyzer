@@ -21,6 +21,8 @@ public class Game {
 	private Set<ClassModel> clonedClasses;
 	private Set<ClassModel> reusedClasses;
 	private Map<String, List<String>> relations;
+	private List<String> gPaths;
+	private Set<String> cNames;
 	
 	public Set<ClassModel> getReusedClasses() {
 		return this.reusedClasses;
@@ -28,6 +30,14 @@ public class Game {
 	
 	public Map<String, List<String>> getRelations() {
 		return this.relations;
+	}
+	
+	public Set<String> getClassNames() {
+		return this.cNames;
+	}
+	
+	public List<String> getGraphPaths() {
+		return this.gPaths;
 	}
 	
 	public Game(String title, Map<String, List<ClassModel>> architecture) {
@@ -39,6 +49,8 @@ public class Game {
 		this.clonedClasses = new HashSet<ClassModel>();
 		this.reusedClasses = new HashSet<ClassModel>();
 		this.relations = new HashMap<String, List<String>>();
+		this.gPaths = new ArrayList<String>();
+		this.cNames = new HashSet<String>();
 		
 		for(String packageName : architecture.keySet()) {
 			List<ClassModel> classes = architecture.get(packageName);
@@ -84,6 +96,19 @@ public class Game {
 							queue.offer(c);
 							reusedClasses.add(c);
 						}
+					}
+				}
+			}
+		}
+		
+		for(String packageName : architecture.keySet()) {
+			for(ClassModel classModel : architecture.get(packageName)) {
+				cNames.add(classModel.getClassName());
+				if(classModel.getMethods().isEmpty()) {
+					gPaths.add(this.title+"<-"+packageName+"<-"+classModel.getClassName());
+				} else {
+					for(MethodModel methodModel : classModel.getMethods()) {
+						gPaths.add(this.title+"<-"+packageName+"<-"+classModel.getClassName()+"<-"+methodModel.getSignature());
 					}
 				}
 			}

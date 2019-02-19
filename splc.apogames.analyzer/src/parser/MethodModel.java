@@ -108,11 +108,36 @@ public class MethodModel {
 		}
 		
 		if ( !myVariables.isEmpty() ) {
-			buffer.append(" --(지역변수)--> ");
+			buffer.append(" --(local variable)--> ");
 			for (String key : myVariables.keySet()) {
 				buffer.append(myVariables.get(key) + " " + key +", ");
 			}
 			buffer.delete(buffer.lastIndexOf(","), buffer.length());
+		}
+		
+		return buffer.toString();
+	}
+
+	public String getSignature() {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(myPerspective+" "+myReturn+" "+myId);
+
+		buffer.append("(");
+		if ( !myParameters.isEmpty() ) {
+			for (String key : myParameters.keySet()) {
+				buffer.append(myParameters.get(key) + " " + key +", ");
+			}
+			buffer.delete(buffer.lastIndexOf(","), buffer.length());
+		}
+		buffer.append(") ");
+		
+		if ( !myThrows.isEmpty() ) {
+			buffer.append("throws ");
+			for (String s : myThrows) {
+				buffer.append(s +",");
+			}
+			buffer.delete(buffer.lastIndexOf(","), buffer.length());
+			buffer.append(" ");
 		}
 		
 		return buffer.toString();
