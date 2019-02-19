@@ -35,11 +35,11 @@ public class Main {
 		}
 
 		System.out.println();
-		printAdjacencyMatrix(games); 	// Åë°èÀûÀ¸·Î °¢ Å¬·¡½º°¡ ¾ó¸¶³ª ¸¹Àº ´Ù¸¥ Å¬·¡½º¿Í °ü°è¸¦ ¸Î°í ÀÖ´Â°¡?
+		printAdjacencyMatrix(games); 	// í†µê³„ì ìœ¼ë¡œ ê° í´ë˜ìŠ¤ê°€ ì–¼ë§ˆë‚˜ ë§ì€ ë‹¤ë¥¸ í´ë˜ìŠ¤ì™€ ê´€ê³„ë¥¼ ë§ºê³  ìˆëŠ”ê°€?
 		System.out.println();
-		printReuseFrequency(games);		// ¾ó¸¶³ª ¸¹Àº ¾Û(°ÔÀÓ)¿¡¼­ Æ¯Á¤ Å¬·¡½º°¡ Àç»ç¿ëµÇ°í ÀÖ´Â°¡?
+		printReuseFrequency(games);		// ì–¼ë§ˆë‚˜ ë§ì€ ì•±(ê²Œì„)ì—ì„œ íŠ¹ì • í´ë˜ìŠ¤ê°€ ì¬ì‚¬ìš©ë˜ê³  ìˆëŠ”ê°€?
 		System.out.println();
-		printMethodSimilarity(games);   // Å¬·¡½º ³»ºÎ ¸Ş¼ÒµåÀÇ À¯»çµµ´Â ¾î¶°ÇÑ°¡? public boolean readLevel(boolean bURL, String fileName)
+		printMethodSimilarity(games);   // í´ë˜ìŠ¤ ë‚´ë¶€ ë©”ì†Œë“œì˜ ìœ ì‚¬ë„ëŠ” ì–´ë– í•œê°€? public boolean readLevel(boolean bURL, String fileName)
 		System.out.println();
 		printCTTI(games);
 	}
@@ -61,36 +61,33 @@ public class Main {
 			Set<String> targetGraphPaths = new HashSet<String>();
 			Set<String> paths = new HashSet<String>();
 			Set<String> nodes = new HashSet<String>();
-			Set<String> apps = new HashSet<String>();
+			Set<String> roots = new HashSet<String>();
 			
 			for(String graphPath : allGraphPaths) {
 				if(graphPath.contains(className)) {
-					targetGraphPaths.add(graphPath);
 					List<String> list = Arrays.asList( graphPath.split("<-") );
-					for(String node : list) {
-					
-						
-					}
 					nodes.addAll(list);
-					apps.add(list.get(0));
+					roots.add(list.get(0));
+					StringBuffer path = new StringBuffer();
+					for(String node : list) {
+						if("".isEquals(path)) {
+							path.append("<-");
+						}
+						path.append(node);
+						paths.add(path);
+					}
 				}
 			}
-			nodes.removeAll(gameTitles);
+			nodes.removeAll(roots);
+			paths.removeAll(roots);
 
 			int d = nodes.size();
-			int sigmaPhi = 0;
-			for(String graphPath : targetGraphPaths) {
-				for(String node : nodes) {
-					if(graphPath.contains(node)) {
-						sigmaPhi++;
-					}
-				}
-			}
-			System.out.println(targetGraphPaths.toString());
+			int sigmaPhi = paths.size();
 			float tcci = 1 - (((float)d-1)/(sigmaPhi-1));
+			
 			tccis.put(className, tcci);
-			frequencies.put(className, apps.size());
-			System.out.println(apps.size() + " " + d + " " + sigmaPhi);
+			frequencies.put(className, roots.size());
+			System.out.println(roots.size() + " " + d + " " + sigmaPhi);
 		}
 		
 		for(String className : tccis.keySet()) {
@@ -106,7 +103,7 @@ public class Main {
 		try {
 			gameTitles =  Files.walk(Paths.get(commonPath), 1)
 						   	   .filter(Files::isDirectory)
-						   	   .skip(1)		// ·çÆ® µğ·ºÅä¸®(Java) Á¦¿Ü
+						   	   .skip(1)		// ë£¨íŠ¸ ë””ë ‰í† ë¦¬(Java) ì œì™¸
 						   	   .map(file -> file.getFileName().toString())
 						   	   .filter(name -> !name.contains("(X)"))
 						   	   .collect(Collectors.toList());
