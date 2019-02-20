@@ -126,7 +126,7 @@ public class Main {
 		try {
 			gameTitles =  Files.walk(Paths.get(commonPath), 1)
 						   	   .filter(Files::isDirectory)
-						   	   .skip(1)		// 猷⑦듃 �뵒�젆�넗由�(Java) �젣�쇅
+						   	   .skip(1)		// 루트 디렉토리(Java) 제외
 						   	   .map(file -> file.getFileName().toString())
 						   	   .filter(name -> !name.contains("(X)"))
 						   	   .collect(Collectors.toList());
