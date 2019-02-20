@@ -32,7 +32,7 @@ public class Game {
 		return this.relations;
 	}
 	
-	public Set<String> getClassNames() {
+	public Set<String> getOrgClassNames() {
 		return this.cNames;
 	}
 	
@@ -102,13 +102,16 @@ public class Game {
 		}
 		
 		for(String packageName : architecture.keySet()) {
+			if(packageName.contains("org.") == false) {
+				continue;
+			}
 			for(ClassModel classModel : architecture.get(packageName)) {
-				cNames.add(classModel.getClassName());
+				cNames.add(packageName+"."+classModel.getClassName());
 				if(classModel.getMethods().isEmpty()) {
-					gPaths.add(this.title+"<-"+packageName+"<-"+classModel.getClassName());
+					gPaths.add(this.title+"<-"+packageName+"."+classModel.getClassName());
 				} else {
 					for(MethodModel methodModel : classModel.getMethods()) {
-						gPaths.add(this.title+"<-"+packageName+"<-"+classModel.getClassName()+"<-"+methodModel.getSignature());
+						gPaths.add(this.title+"<-"+packageName+"."+classModel.getClassName()+"<-"+methodModel.getSignature());
 					}
 				}
 			}

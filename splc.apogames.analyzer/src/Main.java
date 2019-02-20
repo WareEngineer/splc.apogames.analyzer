@@ -41,7 +41,7 @@ public class Main {
 		System.out.println();
 		printMethodSimilarity(games);   // 클래스 내부 메소드의 유사도는 어떠한가? public boolean readLevel(boolean bURL, String fileName)
 		System.out.println();
-		printCTTI(games);
+		printCTTI(games);				// 클래스별 TCCI 값 산출
 	}
 	
 	private static void printCTTI(Map<String, Game> games) {
@@ -49,32 +49,33 @@ public class Main {
 		Map<String, Integer> frequencies = new HashMap<String, Integer>();
 		Set<String> allClassNames = new HashSet<String>();
 		List<String> allGraphPaths = new ArrayList<String>();
-		List<String> gameTitles = getGameTitles(commonPath);
 		
 		for(Game game : games.values()) {
-			allClassNames.addAll(game.getClassNames());
+			allClassNames.addAll(game.getOrgClassNames());
 			allGraphPaths.addAll(game.getGraphPaths());
 		}
-		
+
+		int total = 0;
+		int zero = 0;
+		int nonZero = 0;
 		// TCCI = 1 - ((d-1)/((sigmaPhi)-1))
 		for(String className : allClassNames) {
-			Set<String> targetGraphPaths = new HashSet<String>();
 			Set<String> paths = new HashSet<String>();
 			Set<String> nodes = new HashSet<String>();
 			Set<String> roots = new HashSet<String>();
-			
+
 			for(String graphPath : allGraphPaths) {
-				if(graphPath.contains(className)) {
-					List<String> list = Arrays.asList( graphPath.split("<-") );
+				List<String> list = Arrays.asList( graphPath.split("<-") );
+				if(className.equals(list.get(1))) {
 					nodes.addAll(list);
 					roots.add(list.get(0));
 					StringBuffer path = new StringBuffer();
 					for(String node : list) {
-						if("".isEquals(path)) {
+						if("".equals(path)) {
 							path.append("<-");
 						}
 						path.append(node);
-						paths.add(path);
+						paths.add(path.toString());
 					}
 				}
 			}
@@ -85,16 +86,38 @@ public class Main {
 			int sigmaPhi = paths.size();
 			float tcci = 1 - (((float)d-1)/(sigmaPhi-1));
 			
-			tccis.put(className, tcci);
-			frequencies.put(className, roots.size());
-			System.out.println(roots.size() + " " + d + " " + sigmaPhi);
+			total++;
+			if (tcci == 0) {
+				zero++;
+			} else {
+//				System.out.println(roots.size() + " " + d + " " + sigmaPhi);
+				nonZero++;
+				tccis.put(className, tcci);
+				frequencies.put(className, roots.size());
+			}
 		}
 		
-		for(String className : tccis.keySet()) {
-			float tcci = tccis.get(className);
-			int frequency = frequencies.get(className);
-//			System.out.println(String.format("%30s [%2d] : %f", className, frequency, tcci));
+		List<String> list = new ArrayList<String>(tccis.keySet()); 
+		Collections.sort(list);
+		for(int i=games.size(); i>0; i--) {
+			for(String className : list) {
+				float tcci = tccis.get(className);
+				int frequency = frequencies.get(className);
+				if(frequency == i) {
+					System.out.println(String.format("%-42s [%2d] : %f", className, frequency, tcci));
+				}
+			}
 		}
+		System.out.println("----------------------------------------------------------");
+		System.out.println(String.format("\t\tTotal:%3d, Non-Zero:%3d, Zero:%3d", total, nonZero, zero));
+		System.out.println("----------------------------------------------------------");
+
+//		System.out.println();
+//		for(String graphPath : allGraphPaths) {
+//			if(graphPath.contains("DataContainerFactory")) {
+//				System.out.println(graphPath);
+//			}
+//		}
 	}
 
 	private static List<String> getGameTitles(String path) {
@@ -103,7 +126,7 @@ public class Main {
 		try {
 			gameTitles =  Files.walk(Paths.get(commonPath), 1)
 						   	   .filter(Files::isDirectory)
-						   	   .skip(1)		// 루트 디렉토리(Java) 제외
+						   	   .skip(1)		// 猷⑦듃 �뵒�젆�넗由�(Java) �젣�쇅
 						   	   .map(file -> file.getFileName().toString())
 						   	   .filter(name -> !name.contains("(X)"))
 						   	   .collect(Collectors.toList());
