@@ -41,7 +41,87 @@ public class Main {
 		System.out.println();
 		printMethodSimilarity(games);   // 클래스 내부 메소드의 유사도는 어떠한가? public boolean readLevel(boolean bURL, String fileName)
 		System.out.println();
-		printCTTI(games);				// 클래스별 TCCI 값 산출
+//		printCTTI(games);				// 클래스별 TCCI 값 산출
+		printModCTTI(games);
+	}
+	
+	private static void printModCTTI(Map<String, Game> games) {
+		Set<String> allClassNames = new HashSet<String>();
+		List<String> allGraphPaths = new ArrayList<String>();
+		
+		for(Game game : games.values()) {
+			allClassNames.addAll(game.getOrgClassNames());
+			allGraphPaths.addAll(game.getGraphPaths());
+		}
+		
+		Map<String, Set<String>> map = new HashMap<String, Set<String>>();
+		for(String graphPath : allGraphPaths) {
+			List<String> nodes = Arrays.asList( graphPath.split("<-") );
+			if(1 < nodes.size()) {
+				String className = nodes.get(1);
+				if(map.containsKey(className) == false) {
+					map.put(className, new HashSet<String>());
+				}
+				map.get(className).add(graphPath);
+			}
+		}
+		
+		Map<String, Float> tccis = new HashMap<String, Float>();
+		Map<String, Integer> frequencies = new HashMap<String, Integer>();
+		for(String key : map.keySet()) {
+			Set<String> graphPaths = map.get(key);
+			Set<String> modGraphPaths = new HashSet<String>();
+			for(String path : graphPaths) {
+				String[] nodes = path.split("<-");
+				switch(nodes.length) {
+					case 1: modGraphPaths.add(nodes[0]); break;
+					case 2: modGraphPaths.add(nodes[0]+"<-"+nodes[0]+"."+nodes[1]); break;
+					case 3: modGraphPaths.add(nodes[0]+"<-"+nodes[0]+"."+nodes[1]+"<-"+nodes[2]); break;
+				}
+			}
+
+			Set<String> products = new HashSet<String>();
+			Set<String> endItems = new HashSet<String>();
+			Set<String> edges = new HashSet<String>();
+			Set<String> methods = new HashSet<String>();
+			for(String path : modGraphPaths) {
+				String[] nodes = path.split("<-");
+				for(int i=0; i<nodes.length; i++) {
+					if(i==0) {
+						endItems.add(nodes[i]);
+						products.add(nodes[0]);
+					} else {
+						edges.add(nodes[i-1]+"<-"+nodes[i]);
+						if(i==(nodes.length-1)) {
+							endItems.add(nodes[i]);
+						}
+						if(i==2) methods.add(nodes[i]);
+					}
+				}
+			}
+			
+			int d = endItems.size();
+			int sigmaPhi = edges.size();
+			float tcci = 1 - (((float)d-1)/(sigmaPhi-1));
+			
+			tccis.put(key, tcci);
+			frequencies.put(key, products.size());
+			String format = String.format("%-45s [%2d] : %8f \t[d:%2d, sigmaPhi:%3d, complite-sigmaPhi:%3d]", key, products.size(), tcci, d, sigmaPhi, methods.size()*products.size());
+			System.out.println(format);
+		}
+		
+		System.out.println("\n\n");
+		List<String> list = new ArrayList<String>(tccis.keySet()); 
+		Collections.sort(list);
+		for(int i=games.size(); i>0; i--) {
+			for(String className : list) {
+				float tcci = tccis.get(className);
+				int frequency = frequencies.get(className);
+				if(frequency == i) {
+					System.out.println(String.format("%-45s [%2d] : %f", className, frequency, tcci));
+				}
+			}
+		}
 	}
 	
 	private static void printCTTI(Map<String, Game> games) {
