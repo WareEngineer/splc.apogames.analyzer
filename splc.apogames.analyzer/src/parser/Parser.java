@@ -1,14 +1,9 @@
 package parser;
 
-import java.awt.datatransfer.StringSelection;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +11,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
+
+import model.ClassModel;
+import model.MethodModel;
 
 public class Parser {
 	
@@ -37,8 +35,6 @@ public class Parser {
 			MethodModel mMethod = null;
 			boolean isMethod = false;
 
-//			System.out.println("************************" + path);
-			
 			for(Token token : tokens) {
 				Map<String, Object> map = composer.compose(token);
 				if (map.containsKey("TYPE")) {
@@ -73,7 +69,18 @@ public class Parser {
 							classes.peek().addAttribute(map);
 						}
 						break;
+					case "undefined":
+						if(classes.empty()) break;
+						ClassModel cm = classes.peek();
+						String id = (String) map.get("id");
+						if(cm.containsAttribute(id)==false) {
+							if(mMethod!=null && mMethod.containsVariable(id)==false) {
+								cm.addStaticInstance(id);
+							}
+						}
+						break;
 					}
+						
 				}
 				
 				if ("{".equals(token.getId())){
@@ -95,6 +102,28 @@ public class Parser {
 				}
 			}
 		}
+		
+		for(List<ClassModel> list : structure.values()) {
+			for(ClassModel cm1 : list) {
+				for(ClassModel cm2 : list) {
+					cm1.addImplicitImport(cm2.getPath());
+				}
+				
+				List<String> imports = new ArrayList<String>(cm1.getImports());
+				for(String s : imports) {
+					if(s.endsWith(".*")) {
+						String pName = s.replace(".*", "");
+						if(structure.containsKey(pName)) {
+							cm1.removeImport(s);
+							for(ClassModel cm2 : structure.get(pName)) {
+								cm1.addImport(cm2.getPath());
+							}
+						}
+					}
+				}
+			}
+		}
+		
 		return structure;
 	}
 

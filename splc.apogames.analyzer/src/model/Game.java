@@ -1,4 +1,4 @@
-package parser;
+package model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,9 +20,14 @@ public class Game {
 	private Set<ClassModel> writtenClasses;
 	private Set<ClassModel> clonedClasses;
 	private Set<ClassModel> reusedClasses;
+	private Set<ClassModel> reusedClasses2;
 	private Map<String, List<String>> relations;
 	private List<String> gPaths;
 	private Set<String> cNames;
+	
+	public Set<ClassModel> getClonedClasses() {
+		return this.clonedClasses;
+	}
 	
 	public Set<ClassModel> getReusedClasses() {
 		return this.reusedClasses;
@@ -48,6 +53,7 @@ public class Game {
 		this.writtenClasses = new HashSet<ClassModel>();
 		this.clonedClasses = new HashSet<ClassModel>();
 		this.reusedClasses = new HashSet<ClassModel>();
+		this.reusedClasses2 = new HashSet<ClassModel>();
 		this.relations = new HashMap<String, List<String>>();
 		this.gPaths = new ArrayList<String>();
 		this.cNames = new HashSet<String>();
@@ -101,6 +107,57 @@ public class Game {
 			}
 		}
 		
+		queue = new LinkedList<ClassModel>();
+		visitedPath = new HashSet<String>();
+		queue.addAll(writtenClasses);
+		
+		while( !queue.isEmpty() ) {
+			ClassModel mClass = queue.poll();
+			visitedPath.add(mClass.getPath());
+//			System.out.println("####" + mClass.getPath());
+//			System.out.println(mClass.getAttribute());
+//			System.out.println(mClass.getStaticInstances().toString());
+			
+			for(String type : mClass.getAllUsedTypes()) {
+				String suffix = "." + type;
+				List<String> imports = new ArrayList<String>();
+				imports.addAll(mClass.getImports());
+				imports.addAll(mClass.getImplicitImports());
+
+				for(String path : imports) {
+					if (path.endsWith(suffix) && !visitedPath.contains(path)) {
+						int pos = path.lastIndexOf('.');
+						String pName = path.substring(0, pos);
+						String cName = path.substring(pos+1);
+						if(architecture.containsKey(pName)) {
+							for(ClassModel c : architecture.get(pName)) {
+								if(c.getClassName().equals(cName)) {
+									queue.offer(c);
+									if(path.startsWith("org.")) {
+										reusedClasses2.add(c);
+										continue;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		Set<String> test = new HashSet<String>();
+		Set<String> te = new HashSet<String>();
+		for(ClassModel s1 : reusedClasses) {
+			test.add(s1.getPath());
+		}
+		for(ClassModel s2 : reusedClasses2) {
+			test.add(s2.getPath());
+			te.add(s2.getPath());
+		}
+		System.out.println(reusedClasses.size() +"::"+ reusedClasses2.size() +"::"+ test.size());
+		test.removeAll(te);
+		System.out.println(test);
+		
 		for(String packageName : architecture.keySet()) {
 			if(packageName.contains("org.") == false) {
 				continue;
@@ -117,10 +174,10 @@ public class Game {
 			}
 		}
 	}
-	
+
 	private Set<String> getRelationFromClassToPackage(ClassModel from, String to) {
 		Set<String> importStatements = from.getImports();
-		Set<String> usedTypes = from.getRelations();
+		Set<String> usedTypes = from.getAllUsedTypes();
 		
 		Set<String> implicitImportTypes = new HashSet<String>(usedTypes);
 		for( String statement : importStatements ) {
@@ -140,7 +197,7 @@ public class Game {
 		
 		return importStatements.stream().filter(name -> name.startsWith(to)).collect(Collectors.toSet());
 	}
-
+	
 	public String toString() {
 		String s = String.format("***%-15s  [WRITTEN:%3d, CLONED:%3d, ALL:%3d]  => REUSED:%2d,  UNUSED:%2d", 
 								 this.title, 

@@ -1,4 +1,4 @@
-package parser;
+package model;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,14 +13,11 @@ public class MethodModel {
 	private String myId;
 	private Map<String, String> myParameters;
 	private List<String> myThrows;
-	private Map<String, String> myClassAttributes;
 	private Map<String, String> myVariables;
-	private Set<String> myRelations;
-	private Map<String, List<String>> sendingMessages;
+//	private Map<String, List<String>> sendingMessages;
 	
 	public MethodModel(Map<String, Object> map) {
 		myVariables = new LinkedHashMap<String, String>();
-		myRelations = new HashSet<String>();
 		
 		for (String key : map.keySet()) {
 			switch(key) {
@@ -52,37 +49,44 @@ public class MethodModel {
 		myVariables.put(varName, varType);
 	}
 	
-	public Set<String> getRelations() {
-		return myRelations;
+	public Set<String> getUsedTypes() {
+		Set<String> usedTypes = new HashSet<String>();
+		
+		for(String var : myVariables.values()) {
+			if(var.contains("[]")) {
+				usedTypes.add(var.replace("[]", ""));
+			}
+			else {
+				usedTypes.add(var);
+			}
+		}
+		
+		return usedTypes;
 	}
+	
+	public String getSignature() {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(myPerspective+" "+myReturn+" "+myId);
 
-	public void addClassAttributes(Map<String, String> classAttributes) {
-		myClassAttributes = classAttributes;
-		relate(myVariables);
-		relate(myClassAttributes);
-	}
-	
-	private void relate(  Map<String, String> vars ) {
-		String varType; 
-		for (String key : vars.keySet()) {
-			varType = vars.get(key);
-			if (varType.contains("[]")) {
-				varType = varType.replace("[]", "");
+		buffer.append("(");
+		if ( !myParameters.isEmpty() ) {
+			for (String key : myParameters.keySet()) {
+				buffer.append(myParameters.get(key) + " " + key +", ");
 			}
-			
-			if (!isPrimitiveType(varType)) {
-				myRelations.add(varType);
+			buffer.delete(buffer.lastIndexOf(","), buffer.length());
+		}
+		buffer.append(") ");
+		
+		if ( !myThrows.isEmpty() ) {
+			buffer.append("throws ");
+			for (String s : myThrows) {
+				buffer.append(s +",");
 			}
+			buffer.delete(buffer.lastIndexOf(","), buffer.length());
+			buffer.append(" ");
 		}
-//		System.out.println(myId + ":" +myRelations);
-	}
-	
-	private boolean isPrimitiveType(String type) {
-		switch(type) {
-		case "boolean": case "char": case "short": case "int": case "long": case "float": case "double": 
-			return true;
-		}
-		return false;
+		
+		return buffer.toString();
 	}
 	
 	public String toString() {
@@ -118,29 +122,15 @@ public class MethodModel {
 		return buffer.toString();
 	}
 
-	public String getSignature() {
-		StringBuffer buffer = new StringBuffer();
-		buffer.append(myPerspective+" "+myReturn+" "+myId);
+	public boolean containsVariable(String id) {
+		if(myVariables.containsKey(id)) {
+			return true;
+		}
+		return false;
+	}
 
-		buffer.append("(");
-		if ( !myParameters.isEmpty() ) {
-			for (String key : myParameters.keySet()) {
-				buffer.append(myParameters.get(key) + " " + key +", ");
-			}
-			buffer.delete(buffer.lastIndexOf(","), buffer.length());
-		}
-		buffer.append(") ");
-		
-		if ( !myThrows.isEmpty() ) {
-			buffer.append("throws ");
-			for (String s : myThrows) {
-				buffer.append(s +",");
-			}
-			buffer.delete(buffer.lastIndexOf(","), buffer.length());
-			buffer.append(" ");
-		}
-		
-		return buffer.toString();
+	public Set<String> getVariable() {
+		return myVariables.keySet();
 	}
 
 }

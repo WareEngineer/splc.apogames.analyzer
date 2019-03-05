@@ -1,11 +1,16 @@
 package parser;
 
 import java.util.Map;
+import java.util.Queue;
 import java.util.Stack;
+
+import model.ClassModel;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Composer {
@@ -36,9 +41,16 @@ public class Composer {
 	private Map<Integer, List<String>> VARIABLE;
 	
 	private boolean isAnnotation;
+	private Queue<Token> queue;
+	private Map<String, Object> undefinedMap;
 	
 	public Composer() {
 		isAnnotation = false;
+		
+		queue = new LinkedList<Token>();
+		queue.offer(null);
+		queue.offer(null);
+		queue.offer(null);
 		
 		classStep = -1;
 		className = "";
@@ -118,6 +130,11 @@ public class Composer {
 			return tmp;
 		}
 		
+		if (composeStaticClass(token)) {
+			tmp = undefinedMap;
+			count++;
+		}
+		
 		if (composePackage(token)) {
 			tmp = packageMap;
 			count++;
@@ -154,6 +171,48 @@ public class Composer {
 		}
 		
 		return tmp;
+	}
+	
+	private boolean composeStaticClass(Token token) {
+		queue.offer(token);
+		if(queue.poll() == null) return false;
+		
+		Token[] tokens = queue.toArray(new Token[queue.size()]);
+		if(tokens.length != 3) {
+			try {
+				throw new Exception();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		String staticClassPattern = TOKEN_TYPE.IDENTIFIER + ".";
+		if(".".equals(tokens[0].getId())==false && tokens[0].getType()!=TOKEN_TYPE.IDENTIFIER) {
+			String pattern = tokens[1].getType() + tokens[2].getId();
+
+			if(staticClassPattern.equals(pattern)) {
+				undefinedMap = new HashMap<String, Object>();
+				undefinedMap.put("TYPE", "undefined");
+				undefinedMap.put("id", tokens[1].getId());
+				return true;
+			}
+		}
+		
+		String constructPattern = "new" + TOKEN_TYPE.IDENTIFIER;
+		if(tokens[0].getType()==TOKEN_TYPE.KEYWORD && "new".equals(tokens[0].getId())) {
+			String pattern = tokens[0].getId() + tokens[1].getType();
+			
+			if(constructPattern.equals(pattern)) {
+				undefinedMap = new HashMap<String, Object>();
+				undefinedMap.put("TYPE", "undefined");
+				undefinedMap.put("id", tokens[1].getId());
+				return true;
+			}
+		}
+		
+		// 캐스팅 처리 필요
+		
+		return false;
 	}
 
 	private boolean composePackage(Token token) {

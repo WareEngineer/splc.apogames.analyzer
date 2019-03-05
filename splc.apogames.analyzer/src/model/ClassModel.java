@@ -1,4 +1,4 @@
-package parser;
+package model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,13 +18,16 @@ public class ClassModel {
 	private String myId;
 	private List<String> myExtends;
 	private List<String> myImplements;
-	private List<MethodModel> myMethods;
+	private Set<String> myStaticInstances;
 	private Map<String, String> myAttributes;
+	private List<MethodModel> myMethods;
 //	private Map<String, List<String>> sendingMessages;
 	
 	public ClassModel(Map<String, Object> map) {
-		myMethods = new ArrayList<MethodModel>();
+		myImplicitImports = new HashSet<String>();
+		myStaticInstances = new HashSet<String>();
 		myAttributes = new HashMap<String, String>();
+		myMethods = new ArrayList<MethodModel>();
 		
 		for (String key : map.keySet()) {
 			switch(key) {
@@ -62,21 +65,38 @@ public class ClassModel {
 		}
 	}
 
-	public Set<String> getRelations() {
-		Set<String> myRelations = new HashSet<String>();
-		myRelations.addAll(myExtends);
-		myRelations.addAll(myImplements);
+	public Set<String> getAllUsedTypes() {
+		Set<String> usedTypes = new HashSet<String>();
+		usedTypes.addAll(myExtends);
+		usedTypes.addAll(myImplements);
+		usedTypes.addAll(myStaticInstances);
 		
-		for (MethodModel method : myMethods) {
-			method.addClassAttributes(myAttributes);
-			myRelations.addAll(method.getRelations());
+		for(String attr : myAttributes.values()) {
+			if(attr.contains("[]")) {
+				usedTypes.add(attr.replace("[]", ""));
+			}
+			else {
+				usedTypes.add(attr);
+			}
 		}
 		
-		return myRelations;
+		for (MethodModel method : myMethods) {
+			usedTypes.addAll(method.getUsedTypes());
+		}
+		
+		return usedTypes;
 	}
 	
 	public String getPackageName() {
 		return myPackage;
+	}
+
+	public void removeImport(String s) {
+		myImports.remove(s);
+	}
+	
+	public void addImport(String s) {
+		myImports.add(s);
 	}
 	
 	public Set<String> getImports() {
@@ -94,9 +114,21 @@ public class ClassModel {
 	public void addMethod(MethodModel method) {
 		myMethods.add(method);
 	}
+
+	public void addStaticInstance(String s) {
+		myStaticInstances.add(s);
+	}
 	
 	public void addAttribute(Map<String, Object> map) {
 		myAttributes.put( (String) map.get("identifier"), (String) map.get("dataType") );
+	}
+	
+	public void addImplicitImport(String s) {
+		myImplicitImports.add(s);
+	}
+	
+	public Set<String> getImplicitImports() {
+		return myImplicitImports;
 	}
 	
 	public String toString() {
@@ -131,16 +163,20 @@ public class ClassModel {
 		
 		return buffer.toString();
 	}
-	
-	public boolean equals(ClassModel other) {
-		String s1 = this.myPackage + this.myId;
-		String s2 = other.myPackage + other.myId;
-		
-		if (s1.equals(s2)) {
+
+	public boolean containsAttribute(String id) {
+		if(myAttributes.containsKey(id)) {
 			return true;
-		} 
-		
+		}
 		return false;
+	}
+
+	public Set<String> getStaticInstances() {
+		return myStaticInstances;
+	}
+
+	public Set<String> getAttribute() {
+		return myAttributes.keySet();
 	}
 
 }
