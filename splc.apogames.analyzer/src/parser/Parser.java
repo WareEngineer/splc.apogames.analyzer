@@ -72,6 +72,9 @@ public class Parser {
 					case "undefined":
 						if(classes.empty()) break;
 						ClassModel cm = classes.peek();
+//						if(map.containsKey("new")) {
+//							System.out.println(cm.getPath() + "::" + map.get("id"));
+//						}
 						String id = (String) map.get("id");
 						if(cm.containsAttribute(id)==false) {
 							if(mMethod!=null && mMethod.containsVariable(id)==false) {

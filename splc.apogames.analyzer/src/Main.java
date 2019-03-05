@@ -43,8 +43,8 @@ public class Main {
 		Parser parser = new Parser();
 		Map<String, Game> games = new HashMap<String, Game>();
 		
-//		List<String> gameTitles = Arrays.asList("ApoBot");
-		List<String> gameTitles = getGameTitles(commonPath);
+		List<String> gameTitles = Arrays.asList("ApoBot");
+//		List<String> gameTitles = getGameTitles(commonPath);
 		for (String gameTitle : gameTitles) {
 			String path = commonPath + gameTitle; 
 			Game game = new Game( gameTitle, parser.parse(path) );

@@ -197,18 +197,19 @@ public class Composer {
 				return true;
 			}
 		}
-		
-		String constructPattern = "new" + TOKEN_TYPE.IDENTIFIER;
-		if(tokens[0].getType()==TOKEN_TYPE.KEYWORD && "new".equals(tokens[0].getId())) {
-			String pattern = tokens[0].getId() + tokens[1].getType();
-			
-			if(constructPattern.equals(pattern)) {
-				undefinedMap = new HashMap<String, Object>();
-				undefinedMap.put("TYPE", "undefined");
-				undefinedMap.put("id", tokens[1].getId());
-				return true;
-			}
-		}
+//		
+//		String constructPattern = "new" + TOKEN_TYPE.IDENTIFIER;
+//		if(tokens[0].getType()==TOKEN_TYPE.KEYWORD && "new".equals(tokens[0].getId())) {
+//			String pattern = tokens[0].getId() + tokens[1].getType();
+//			
+//			if(constructPattern.equals(pattern)) {
+//				undefinedMap = new HashMap<String, Object>();
+//				undefinedMap.put("TYPE", "undefined");
+//				undefinedMap.put("new", "");
+//				undefinedMap.put("id", tokens[1].getId());
+//				return true;
+//			}
+//		}
 		
 		// 캐스팅 처리 필요
 		

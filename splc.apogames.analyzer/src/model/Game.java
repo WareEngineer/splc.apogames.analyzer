@@ -74,6 +74,7 @@ public class Game {
 		Queue<ClassModel> queue = new LinkedList<ClassModel>();
 		Set<String> visitedPath = new HashSet<String>();
 		queue.addAll(writtenClasses);
+		Set<String> r1 = new HashSet<String>();
 		
 		while( !queue.isEmpty() ) {
 			ClassModel mClass = queue.poll();
@@ -100,6 +101,7 @@ public class Game {
 					for(ClassModel c : architecture.get(pName)) {
 						if(c.getClassName().equals(cName)) {
 							queue.offer(c);
+							r1.add(mClass.getPath() + "->" + path);
 							reusedClasses.add(c);
 						}
 					}
@@ -110,6 +112,7 @@ public class Game {
 		queue = new LinkedList<ClassModel>();
 		visitedPath = new HashSet<String>();
 		queue.addAll(writtenClasses);
+		Set<String> r2 = new HashSet<String>();
 		
 		while( !queue.isEmpty() ) {
 			ClassModel mClass = queue.poll();
@@ -134,6 +137,7 @@ public class Game {
 								if(c.getClassName().equals(cName)) {
 									queue.offer(c);
 									if(path.startsWith("org.")) {
+										r2.add(mClass.getPath() + "->" + path);
 										reusedClasses2.add(c);
 										continue;
 									}
@@ -145,18 +149,13 @@ public class Game {
 			}
 		}
 		
-		Set<String> test = new HashSet<String>();
-		Set<String> te = new HashSet<String>();
-		for(ClassModel s1 : reusedClasses) {
-			test.add(s1.getPath());
+		System.out.println(r1.size());
+		for(String s : r1) {
+			System.out.println(s);
 		}
-		for(ClassModel s2 : reusedClasses2) {
-			test.add(s2.getPath());
-			te.add(s2.getPath());
-		}
-		System.out.println(reusedClasses.size() +"::"+ reusedClasses2.size() +"::"+ test.size());
-		test.removeAll(te);
-		System.out.println(test);
+		System.out.println(r2.size());
+		r1.removeAll(r2);
+		System.out.println(r1.toString());
 		
 		for(String packageName : architecture.keySet()) {
 			if(packageName.contains("org.") == false) {
