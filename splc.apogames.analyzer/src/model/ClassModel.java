@@ -1,6 +1,8 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,8 +18,8 @@ public class ClassModel {
 	private Set<String> myImports;
 	private Set<String> myImplicitImports;
 	private String myId;
-	private List<String> myExtends;
-	private List<String> myImplements;
+	private Set<String> myExtends;
+	private Set<String> myImplements;
 	private Set<String> myStaticInstances;
 	private Map<String, String> myAttributes;
 	private List<MethodModel> myMethods;
@@ -47,10 +49,10 @@ public class ClassModel {
 				myId = (String) map.get("identifier");
 				break;
 			case "extends":
-				myExtends = (List<String>) map.get("extends");
+				myExtends = new HashSet<String>( (List<String>) map.get("extends") );
 				break;
 			case "implements":
-				myImplements = (List<String>) map.get("implements");
+				myImplements =  new HashSet<String>( (List<String>) map.get("implements") );
 				break;
 			}
 		}
@@ -63,28 +65,6 @@ public class ClassModel {
 		else {
 			return myPackage+"."+myId;
 		}
-	}
-
-	public Set<String> getAllUsedTypes() {
-		Set<String> usedTypes = new HashSet<String>();
-		usedTypes.addAll(myExtends);
-		usedTypes.addAll(myImplements);
-		usedTypes.addAll(myStaticInstances);
-		
-		for(String attr : myAttributes.values()) {
-			if(attr.contains("[]")) {
-				usedTypes.add(attr.replace("[]", ""));
-			}
-			else {
-				usedTypes.add(attr);
-			}
-		}
-		
-		for (MethodModel method : myMethods) {
-			usedTypes.addAll(method.getUsedTypes());
-		}
-		
-		return usedTypes;
 	}
 	
 	public String getPackageName() {
@@ -177,6 +157,42 @@ public class ClassModel {
 
 	public Set<String> getAttribute() {
 		return myAttributes.keySet();
+	}
+
+	public Set<String> getExtends() {
+		return myExtends;
+	}
+
+	public Set<String> getImplements() {
+		return myImplements;
+	}
+
+	public Set<String> getAllUsedTypes() {
+		Set<String> usedTypes = new HashSet<String>();
+		usedTypes.addAll(myExtends);
+		usedTypes.addAll(myImplements);
+		usedTypes.addAll(this.getAllVariables());
+		return usedTypes;
+	}
+	
+	public Set<String> getAllVariables() {
+		Set<String> allVariable = new HashSet<String>();
+		allVariable.addAll(myStaticInstances);
+		
+		for(String attr : myAttributes.values()) {
+			if(attr.contains("[]")) {
+				allVariable.add(attr.replace("[]", ""));
+			}
+			else {
+				allVariable.add(attr);
+			}
+		}
+		
+		for (MethodModel method : myMethods) {
+			allVariable.addAll(method.getUsedTypes());
+		}
+		
+		return allVariable;
 	}
 
 }

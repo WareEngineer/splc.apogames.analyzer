@@ -43,8 +43,8 @@ public class Main {
 		Parser parser = new Parser();
 		Map<String, Game> games = new HashMap<String, Game>();
 		
-		List<String> gameTitles = Arrays.asList("ApoBot");
-//		List<String> gameTitles = getGameTitles(commonPath);
+//		List<String> gameTitles = Arrays.asList("ApoBot");
+		List<String> gameTitles = getGameTitles(commonPath);
 		for (String gameTitle : gameTitles) {
 			String path = commonPath + gameTitle; 
 			Game game = new Game( gameTitle, parser.parse(path) );
@@ -57,11 +57,13 @@ public class Main {
 		overlapedArchitecture.printReuseFrequency();	// 얼마나 많은 앱(게임)에서 '.org'패키지의 각 클래스가 재사용되고 있는가?
 		System.out.println();
 		overlapedArchitecture.printClasses();
+		System.out.println();
+		overlapedArchitecture.printMatrix();
 		
-		System.out.println();
-		printAdjacencyMatrix(games); 	// 통계적으로 각 클래스가 얼마나 많은 다른 클래스와 관계를 맺고 있는가?
-		System.out.println();
-		printModCTTI(games);
+//		System.out.println();
+//		printAdjacencyMatrix(games); 	// 통계적으로 각 클래스가 얼마나 많은 다른 클래스와 관계를 맺고 있는가?
+//		System.out.println();
+//		printModCTTI(games);
 	}
 	
 	private static void printModCTTI(Map<String, Game> games) {
@@ -143,41 +145,41 @@ public class Main {
 		}
 	}
 
-	private static void printAdjacencyMatrix(Map<String, Game> games) {
-		Map<String, Map<String, Integer>> adjacencyMatrix = new HashMap<String, Map<String, Integer>>();
-		for (Game game : games.values()) {
-			Map<String, List<String>> relations = game.getRelations();
-			
-			for (String from : relations.keySet()) {
-				if ( !adjacencyMatrix.containsKey(from) ) {
-					adjacencyMatrix.put(from, new HashMap<String, Integer>());
-				}
-				
-				for (String to : relations.get(from)) {
-					if ( !adjacencyMatrix.get(from).containsKey(to) ) {
-						adjacencyMatrix.get(from).put(to, 0);
-					}
-					Integer frequency = adjacencyMatrix.get(from).get(to);
-					adjacencyMatrix.get(from).replace(to, frequency+1);
-				}
-			}
-		}
-		
-		List<String> list = new ArrayList<String>(adjacencyMatrix.keySet()); 
-		Collections.sort(list);
-		for (String from : list) {
-			int begin = from.lastIndexOf('.');
-			String pName = from.substring(0, begin+1);
-			String cName = from.substring(begin+1);
-			System.out.print( String.format("%20s  %30s", pName, cName));
-			for (String to : list) {
-				Integer frequency = adjacencyMatrix.get(from).get(to);
-				if (frequency == null) {
-					frequency = 0;
-				}
-				System.out.print( String.format("%3d", frequency) );
-			}
-			System.out.println();
-		}
-	}
+//	private static void printAdjacencyMatrix(Map<String, Game> games) {
+//		Map<String, Map<String, Integer>> adjacencyMatrix = new HashMap<String, Map<String, Integer>>();
+//		for (Game game : games.values()) {
+//			Map<String, List<String>> relations = game.getRelations();
+//			
+//			for (String from : relations.keySet()) {
+//				if ( !adjacencyMatrix.containsKey(from) ) {
+//					adjacencyMatrix.put(from, new HashMap<String, Integer>());
+//				}
+//				
+//				for (String to : relations.get(from)) {
+//					if ( !adjacencyMatrix.get(from).containsKey(to) ) {
+//						adjacencyMatrix.get(from).put(to, 0);
+//					}
+//					Integer frequency = adjacencyMatrix.get(from).get(to);
+//					adjacencyMatrix.get(from).replace(to, frequency+1);
+//				}
+//			}
+//		}
+//		
+//		List<String> list = new ArrayList<String>(adjacencyMatrix.keySet()); 
+//		Collections.sort(list);
+//		for (String from : list) {
+//			int begin = from.lastIndexOf('.');
+//			String pName = from.substring(0, begin+1);
+//			String cName = from.substring(begin+1);
+//			System.out.print( String.format("%20s  %30s", pName, cName));
+//			for (String to : list) {
+//				Integer frequency = adjacencyMatrix.get(from).get(to);
+//				if (frequency == null) {
+//					frequency = 0;
+//				}
+//				System.out.print( String.format("%3d", frequency) );
+//			}
+//			System.out.println();
+//		}
+//	}
 }

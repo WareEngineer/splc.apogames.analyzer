@@ -72,9 +72,6 @@ public class Parser {
 					case "undefined":
 						if(classes.empty()) break;
 						ClassModel cm = classes.peek();
-//						if(map.containsKey("new")) {
-//							System.out.println(cm.getPath() + "::" + map.get("id"));
-//						}
 						String id = (String) map.get("id");
 						if(cm.containsAttribute(id)==false) {
 							if(mMethod!=null && mMethod.containsVariable(id)==false) {
@@ -124,6 +121,10 @@ public class Parser {
 						}
 					}
 				}
+//				System.out.println(cm1.toString());
+//				for(MethodModel mm : cm1.getMethods()) {
+//					System.out.println(mm.toString());
+//				}
 			}
 		}
 		

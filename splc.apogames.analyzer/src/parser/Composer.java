@@ -197,19 +197,19 @@ public class Composer {
 				return true;
 			}
 		}
-//		
-//		String constructPattern = "new" + TOKEN_TYPE.IDENTIFIER;
-//		if(tokens[0].getType()==TOKEN_TYPE.KEYWORD && "new".equals(tokens[0].getId())) {
-//			String pattern = tokens[0].getId() + tokens[1].getType();
-//			
-//			if(constructPattern.equals(pattern)) {
-//				undefinedMap = new HashMap<String, Object>();
-//				undefinedMap.put("TYPE", "undefined");
-//				undefinedMap.put("new", "");
-//				undefinedMap.put("id", tokens[1].getId());
-//				return true;
-//			}
-//		}
+		
+		String constructPattern = "new" + TOKEN_TYPE.IDENTIFIER;
+		if(tokens[0].getType()==TOKEN_TYPE.KEYWORD && "new".equals(tokens[0].getId())) {
+			String pattern = tokens[0].getId() + tokens[1].getType();
+			
+			if(constructPattern.equals(pattern)) {
+				undefinedMap = new HashMap<String, Object>();
+				undefinedMap.put("TYPE", "undefined");
+				undefinedMap.put("new", "");
+				undefinedMap.put("id", tokens[1].getId());
+				return true;
+			}
+		}
 		
 		// 캐스팅 처리 필요
 		
@@ -474,7 +474,7 @@ public class Composer {
 				// "]"
 				case 9:
 					methodMap.replace("return", methodMap.get("return")+"]");
-					methodStep = 8;
+					methodStep = 7;
 					break;
 				// "("
 				case 10:
@@ -510,7 +510,7 @@ public class Composer {
 				// "]"
 				case 15:
 					parameterType = parameterType + "]";
-					methodStep = 14;
+					methodStep = 13;
 					break;
 				// "," 파라미터 내부 쉼표
 				case 16:
@@ -620,7 +620,7 @@ public class Composer {
 				// "]"
 				case 5:
 					variableMap.replace("dataType", variableMap.get("dataType")+"]");
-					variableStep = 4;
+					variableStep = 3;
 					break;
 				// "="
 				case 6: 
