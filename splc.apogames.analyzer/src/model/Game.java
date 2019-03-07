@@ -93,22 +93,15 @@ public class Game {
 				for(String path : imports) {
 					if(path.endsWith(suffix)) {
 						if(!visitedPath.contains(path)) {
-							int pos = path.lastIndexOf('.');
-							String pName = path.substring(0, pos);
-							String cName = path.substring(pos+1);
-							if(architecture.containsKey(pName)) {
-								for(ClassModel c : architecture.get(pName)) {
-									if(c.getClassName().equals(cName)) {
-										queue.offer(c);
-										if(path.startsWith("org.")) {
-											reusedClasses.add(c);
-											continue;
-										}
-									}
+							ClassModel cm = this.getClassModel(path);
+							if(cm!=null) {
+								queue.offer(cm);
+								if(path.startsWith("org.")) {
+									reusedClasses.add(cm);
 								}
 							}
 						}
-						continue;	
+						break;	// 명시적 선언이 묵시적 선언보다 우선함
 					}
 				}
 			}
@@ -150,12 +143,28 @@ public class Game {
 						relations.put(relation, new HashSet<String>());
 					}
 					relations.get(relation).add(title);
-					continue; 	// 명시적 선언이 묵시적 선언보다 우선함
+					break; 	// 명시적 선언이 묵시적 선언보다 우선함
 				}
 			}
 		}
 		
 		return relations;
+	}
+	
+	public ClassModel getClassModel(String path) {
+		int pos = path.lastIndexOf('.');
+		String pName = path.substring(0, pos);
+		String cName = path.substring(pos+1);
+		
+		if(architecture.containsKey(pName)) {
+			for(ClassModel cm : architecture.get(pName)) {
+				if(path.equals( cm.getPath() )) {
+					return cm;
+				}
+			}
+		}
+		
+		return null;
 	}
 	
 	public String toString() {
@@ -171,6 +180,10 @@ public class Game {
 		return s;
 	}
 	
+	public String getTitle() {
+		return this.title;
+	}
+	
 	public Map<String, Set<String>> getCallMap() {
 		return this.callMap;
 	}
@@ -183,24 +196,4 @@ public class Game {
 		return this.implementMap;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
