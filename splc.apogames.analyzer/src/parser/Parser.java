@@ -121,10 +121,6 @@ public class Parser {
 						}
 					}
 				}
-//				System.out.println(cm1.toString());
-//				for(MethodModel mm : cm1.getMethods()) {
-//					System.out.println(mm.toString());
-//				}
 			}
 		}
 		
