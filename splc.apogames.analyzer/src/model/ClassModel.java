@@ -12,6 +12,7 @@ import java.util.Set;
 public class ClassModel {
 	private static String rootPath;
 
+	private Set<Integer> lineNumbers;
 	private String myType;
 	private String myPerspective;
 	private String myPackage;
@@ -30,6 +31,7 @@ public class ClassModel {
 		myStaticInstances = new HashSet<String>();
 		myAttributes = new HashMap<String, String>();
 		myMethods = new ArrayList<MethodModel>();
+		lineNumbers = new HashSet<Integer>();
 		
 		for (String key : map.keySet()) {
 			switch(key) {
@@ -58,64 +60,12 @@ public class ClassModel {
 		}
 	}
 	
-	public String getPath() {
-		if ( "".equals(myPackage) ) {
-			return myId;
-		}
-		else {
-			return myPackage+"."+myId;
-		}
-	}
-	
-	public String getPackageName() {
-		return myPackage;
-	}
-
-	public void removeImport(String s) {
-		myImports.remove(s);
-	}
-	
-	public void addImport(String s) {
-		myImports.add(s);
-	}
-	
-	public Set<String> getImports() {
-		return myImports;
-	}
-	
-	public String getClassName() {
-		return myId;
-	}
-	
-	public List<MethodModel> getMethods() {
-		return myMethods;
-	}
-	
-	public void addMethod(MethodModel method) {
-		myMethods.add(method);
-	}
-
-	public void addStaticInstance(String s) {
-		myStaticInstances.add(s);
-	}
-	
-	public void addAttribute(Map<String, Object> map) {
-		myAttributes.put( (String) map.get("identifier"), (String) map.get("dataType") );
-	}
-	
-	public void addImplicitImport(String s) {
-		myImplicitImports.add(s);
-	}
-	
-	public Set<String> getImplicitImports() {
-		return myImplicitImports;
-	}
-	
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("[" + myType + "]");
 		buffer.append(myPerspective+" "+myId);
 		buffer.append("\n  |=>Package    :" + myPackage);
+		buffer.append("\n  |=>LineOfCode :" + lineNumbers.size());
 		if (myImports != null) {
 			buffer.append( String.format("\n  |=>%-10s : %s", "Imports", myImports.toString()) );
 		}
@@ -150,6 +100,62 @@ public class ClassModel {
 		}
 		return false;
 	}
+	
+	public void addLineNumbers(int lineNum) {
+		lineNumbers.add(lineNum);
+	}
+
+	public void addImport(String s) {
+		myImports.add(s);
+	}
+
+	public void addImplicitImport(String s) {
+		myImplicitImports.add(s);
+	}
+	
+	public void addMethod(MethodModel method) {
+		myMethods.add(method);
+	}
+
+	public void addStaticInstance(String s) {
+		myStaticInstances.add(s);
+	}
+	
+	public void addAttribute(Map<String, Object> map) {
+		myAttributes.put( (String) map.get("identifier"), (String) map.get("dataType") );
+	}
+	
+	public void removeImport(String s) {
+		myImports.remove(s);
+	}
+	
+	public String getPackageName() {
+		return myPackage;
+	}
+
+	public Set<String> getImports() {
+		return myImports;
+	}
+	
+	public Set<String> getImplicitImports() {
+		return myImplicitImports;
+	}
+	
+	public Set<String> getExtends() {
+		return myExtends;
+	}
+
+	public Set<String> getImplements() {
+		return myImplements;
+	}
+	
+	public String getClassName() {
+		return myId;
+	}
+	
+	public List<MethodModel> getMethods() {
+		return myMethods;
+	}
 
 	public Set<String> getStaticInstances() {
 		return myStaticInstances;
@@ -158,13 +164,14 @@ public class ClassModel {
 	public Set<String> getAttribute() {
 		return myAttributes.keySet();
 	}
-
-	public Set<String> getExtends() {
-		return myExtends;
-	}
-
-	public Set<String> getImplements() {
-		return myImplements;
+	
+	public String getPath() {
+		if ( "".equals(myPackage) ) {
+			return myId;
+		}
+		else {
+			return myPackage+"."+myId;
+		}
 	}
 
 	public Set<String> getAllUsedTypes() {
@@ -193,6 +200,19 @@ public class ClassModel {
 		}
 		
 		return allVariable;
+	}
+
+	public int getLOC() {
+		return lineNumbers.size();
+	}
+
+	public int getDistinctLOC() {
+		int accMethodLoc = 0;
+		for(MethodModel mm : myMethods) {
+			accMethodLoc += mm.getLOC();
+		}
+		
+		return lineNumbers.size() - accMethodLoc;
 	}
 
 }

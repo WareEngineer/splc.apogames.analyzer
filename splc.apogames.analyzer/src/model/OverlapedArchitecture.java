@@ -11,80 +11,88 @@ import java.util.Set;
 public class OverlapedArchitecture {
 	private Set<String> gameTitles;
 	private Map<String, Set<String>> clones;
+	private Map<String, Set<String>> reuses;
 	private Map<String, OverlapedClass> overlapedClasses;
-	private Map<String, Set<String>> overlapedCallMap;
-	private Map<String, Set<String>> overlapedExtendMap;
-	private Map<String, Set<String>> overlapedImplementMap;
-	private Map<String, Set<String>> class2titles;
+	private Map<String, Set<String>> overlapedCallRelationMap;
+	private Map<String, Set<String>> overlapedExtendRelationMap;
+	private Map<String, Set<String>> overlapedImplementRelationMap;
 	private Map<String, Double> tccis;
+//	private Map<String, Double> innerSimilarities;
+	
+	private void buildMap(Map<String, Set<String>> map, Set<String> keys, String value) {
+		for(String key : keys) {
+			if(!map.containsKey(key)) {
+				map.put(key, new HashSet<String>());
+			}
+			map.get(key).add(value);
+		}
+	}
 	
 	public OverlapedArchitecture(Map<String, Game> games) {
 		gameTitles = new HashSet<String>();
 		clones = new HashMap<String, Set<String>>();
+		reuses = new HashMap<String, Set<String>>();
 		overlapedClasses = new HashMap<String, OverlapedClass>();
-		overlapedCallMap = new HashMap<String, Set<String>>();
-		overlapedExtendMap = new HashMap<String, Set<String>>();
-		overlapedImplementMap = new HashMap<String, Set<String>>();
-		class2titles = new HashMap<String, Set<String>>();
+		overlapedCallRelationMap = new HashMap<String, Set<String>>();
+		overlapedExtendRelationMap = new HashMap<String, Set<String>>();
+		overlapedImplementRelationMap = new HashMap<String, Set<String>>();
 		tccis = new HashMap<String, Double>();
 		
 		for(String title : games.keySet()) {
 			gameTitles.add(title);
 			Game game = games.get(title);
 			
-			overlapedCallMap.putAll(game.getCallMap());
-			overlapedExtendMap.putAll(game.getExtendMap());
-			overlapedImplementMap.putAll(game.getImplementMap());
-
+			this.buildMap(overlapedCallRelationMap, game.getCallRelations(), title);
+			this.buildMap(overlapedExtendRelationMap, game.getExtendRelations(), title);
+			this.buildMap(overlapedImplementRelationMap, game.getImplementRelations(), title);
+			
 			for(ClassModel cm : game.getClonedClasses()) {
-				String path = cm.getPath();
-				if(clones.containsKey(path)==false) {
-					clones.put(path, new HashSet<String>());
+				String cName = cm.getPath();
+				if(clones.containsKey(cName)==false) {
+					clones.put(cName, new HashSet<String>());
 				}
-				clones.get(path).add(title);
+				clones.get(cName).add(title);
 			}
 			
-			Set<ClassModel> classes = game.getReusedClasses();
-			for(ClassModel c : classes) {
-				String cName = c.getPath();
-				if(overlapedClasses.containsKey(cName) == false) {
+			for(ClassModel cm : game.getReusedClasses()) {
+				String cName = cm.getPath();
+				if(reuses.containsKey(cName) == false) {
+					reuses.put(cName, new HashSet<String>());
 					overlapedClasses.put(cName, new OverlapedClass(cName));
 				}
-				overlapedClasses.get(cName).overlab(title, c);
-				
-				if(class2titles.containsKey(cName) == false) {
-					class2titles.put(cName, new HashSet<String>());
-				}
-				class2titles.get(cName).add(title);
+				reuses.get(cName).add(title);
+				overlapedClasses.get(cName).overlab(title, cm);
 			}
 		}
 		
 		
-		for(String c : clones.keySet()) {
+		for(String id : reuses.keySet()) {
 			Set<String> distinctComponents = new HashSet<String>();
 			int sigma=0;
 			
-			for(Game game : games.values()) {
-				ClassModel cm = game.getClassModel(c);
+			for(String title : reuses.get(id)) {
+				Game game = games.get(title);
+				
+				ClassModel cm = game.getClassModel(id);
 				if(cm!=null) {
 					sigma++;
-//					distinctComponents.add(c);
-					distinctComponents.add(game.getTitle() + c);
+//					distinctComponents.add(id);
+					distinctComponents.add(game.getTitle() + id);
 					List<MethodModel> mms = cm.getMethods();
 					for(MethodModel mm : cm.getMethods()) {
 						sigma++;
 						distinctComponents.add(mm.getSignature());
 					}
+
+					int d = distinctComponents.size();
+					if(sigma == 1) {
+						d = 2;
+						sigma = 2;	
+					}
+					double tcci = 1.0 - ( (d-1.0) / (sigma-1.0) );
+					tccis.put(id, tcci);
 				}
 			}
-			
-			int d = distinctComponents.size();
-			if(sigma == 1) {
-				d = 2;
-				sigma = 2;	
-			}
-			double tcci = 1.0 - ( (d-1.0) / (sigma-1.0) );
-			tccis.put(c, tcci);
 		}
 	}
 	
@@ -98,7 +106,7 @@ public class OverlapedArchitecture {
 		for(Double value : values) {
 			for(String key : keys) {
 				if(tccis.get(key).equals(value)) {
-					String s = String.format("%-45s [%2d] : %3.2f", key, clones.get(key).size(), tccis.get(key));
+					String s = String.format("%-45s [%2d] : %3.2f", key, reuses.get(key).size(), tccis.get(key));
 					System.out.println(s);
 				}
 			}
@@ -106,12 +114,12 @@ public class OverlapedArchitecture {
 	}
 	
 	public void printMatrix() {
-		System.out.println("Call Relation :: " + overlapedCallMap.size());
-		this.printAdjacencyMatrix(overlapedCallMap);
-		System.out.println("Extend Relation :: " + overlapedExtendMap.size());
-		this.printAdjacencyMatrix(overlapedExtendMap);
-		System.out.println("Implement Relation :: " + overlapedImplementMap.size());
-		this.printAdjacencyMatrix(overlapedImplementMap);
+		System.out.println("Call Relation :: " + overlapedCallRelationMap.size());
+		this.printAdjacencyMatrix(overlapedCallRelationMap);
+		System.out.println("Extend Relation :: " + overlapedExtendRelationMap.size());
+		this.printAdjacencyMatrix(overlapedExtendRelationMap);
+		System.out.println("Implement Relation :: " + overlapedImplementRelationMap.size());
+		this.printAdjacencyMatrix(overlapedImplementRelationMap);
 	}
 	
 	private void printAdjacencyMatrix(Map<String, Set<String>> relations) {
@@ -140,7 +148,7 @@ public class OverlapedArchitecture {
 		
 		for(int i=0; i<=gameTitles.size(); i++) {
 			for(String item : list) {
-				if(class2titles.get(item).size() == i) {
+				if(reuses.get(item).size() == i) {
 					int pos = item.lastIndexOf('.');
 					String pName = item.substring(0, pos);
 					String cName = item.substring(pos+1);
@@ -150,19 +158,28 @@ public class OverlapedArchitecture {
 			}
 		}
 		System.out.println("------------------------------------------------------");
-		String s = String.format("OVERLAP || Poduct:%d, Clone:%d, Reuse:%d", gameTitles.size(), clones.size(), overlapedClasses.size());
+		String s = String.format("OVERLAP || Poduct:%d, Clone:%d, Reuse:%d", gameTitles.size(), clones.size(), reuses.size());
 		System.out.println(s);
 		System.out.println("------------------------------------------------------");
 	}
 
 	public void printClasses() {
 		for(String cName : overlapedClasses.keySet()) {
-			String fn = class2titles.get(cName).size() + "/" + gameTitles.size();
+			String fn = reuses.get(cName).size() + "/" + gameTitles.size();
 			String s = String.format("%5s :: %s", fn, cName);
 			System.out.println(s);
 			overlapedClasses.get(cName).print();
 		}
 	}
+
+//	public void printSimilarity() {
+//		List<String> list = new ArrayList<String>(overlapedClasses.keySet());
+//		for(String key : list) {
+//			double similarity = overlapedClasses.get(key).getSimilarity();
+//			String s = String.format("%-45s [%2d] : %3.2f", key, clones.get(key).size(), similarity);
+//			System.out.println(s);
+//		}
+//	}
 }
 
 

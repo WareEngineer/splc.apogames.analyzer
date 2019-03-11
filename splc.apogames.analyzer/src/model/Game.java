@@ -18,9 +18,9 @@ public class Game {
 	private Set<ClassModel> writtenClasses;
 	private Set<ClassModel> clonedClasses;
 	private Set<ClassModel> reusedClasses;
-	private Map<String, Set<String>> callMap;
-	private Map<String, Set<String>> extendMap;
-	private Map<String, Set<String>> implementMap;
+	private Set<String> callRelations;
+	private Set<String> extendRelations;
+	private Set<String> implementsRelations;
 	private List<String> gPaths;
 	private Set<String> cNames;
 	
@@ -40,6 +40,14 @@ public class Game {
 		return this.gPaths;
 	}
 	
+	public void print() {
+		for(List<ClassModel> list : architecture.values()) {
+			for(ClassModel cm : list) {
+				System.out.println(cm.toString());
+			}
+		}
+	}
+	
 	public Game(String title, Map<String, List<ClassModel>> architecture) {
 		this.title = title;
 		this.architecture = architecture;
@@ -48,9 +56,9 @@ public class Game {
 		this.writtenClasses = new HashSet<ClassModel>();
 		this.clonedClasses = new HashSet<ClassModel>();
 		this.reusedClasses = new HashSet<ClassModel>();
-		this.callMap = new HashMap<String, Set<String>>();
-		this.extendMap = new HashMap<String, Set<String>>();
-		this.implementMap = new HashMap<String, Set<String>>();
+		this.callRelations = new HashSet<String>();
+		this.extendRelations = new HashSet<String>();
+		this.implementsRelations = new HashSet<String>();
 		this.gPaths = new ArrayList<String>();
 		this.cNames = new HashSet<String>();
 		
@@ -83,9 +91,9 @@ public class Game {
 			imports.addAll(mClass.getImports());
 			imports.addAll(mClass.getImplicitImports());
 			
-			this.callMap.putAll( getRelations(imports, mClass.getPath(), mClass.getAllVariables())) ;
-			this.extendMap.putAll( getRelations(imports, mClass.getPath(), mClass.getExtends()) );
-			this.implementMap.putAll( getRelations(imports, mClass.getPath(), mClass.getImplements()) );
+			callRelations.addAll( getRelations(imports, mClass.getPath(), mClass.getAllVariables()) );
+			extendRelations.addAll( getRelations(imports, mClass.getPath(), mClass.getExtends()) );
+			implementsRelations.addAll( getRelations(imports, mClass.getPath(), mClass.getImplements()) );
 			
 			for(String type : mClass.getAllUsedTypes()) {
 				String suffix = "." + type;
@@ -124,8 +132,8 @@ public class Game {
 		}
 	}
 
-	private Map<String, Set<String>> getRelations(List<String> imports, String from, Set<String> set) {
-		Map<String, Set<String>> relations = new HashMap<String, Set<String>>();
+	private Set<String> getRelations(List<String> imports, String from, Set<String> set) {
+		Set<String> relations = new HashSet<String>();
 		
 		for(String type : set) {
 			String suffix = "." + type;
@@ -139,10 +147,7 @@ public class Game {
 						relation = "#GAME" + "->" + to;
 					}
 					
-					if(relations.containsKey(relation)==false) {
-						relations.put(relation, new HashSet<String>());
-					}
-					relations.get(relation).add(title);
+					relations.add(relation);
 					break; 	// 명시적 선언이 묵시적 선언보다 우선함
 				}
 			}
@@ -184,16 +189,16 @@ public class Game {
 		return this.title;
 	}
 	
-	public Map<String, Set<String>> getCallMap() {
-		return this.callMap;
+	public Set<String> getCallRelations() {
+		return this.callRelations;
 	}
 	
-	public Map<String, Set<String>> getExtendMap() {
-		return this.extendMap;
+	public Set<String> getExtendRelations() {
+		return this.extendRelations;
 	}
 
-	public Map<String, Set<String>> getImplementMap() {
-		return this.implementMap;
+	public Set<String> getImplementRelations() {
+		return this.implementsRelations;
 	}
 }
 

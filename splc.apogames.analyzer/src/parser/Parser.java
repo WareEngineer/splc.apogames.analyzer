@@ -26,7 +26,7 @@ public class Parser {
 		Composer composer = new Composer();
 		
 		for (String path : javaSourceFiles) {
-			List<Token> tokens = new Tokenizer(path).getTokens();
+			Tokenizer tokenizer = new Tokenizer(path);
 			Stack<ClassModel> classes = new Stack<ClassModel>();
 			Stack<String> blocks = new Stack<String>();
 			Set<String> importList = new HashSet<String>();
@@ -35,52 +35,62 @@ public class Parser {
 			MethodModel mMethod = null;
 			boolean isMethod = false;
 
-			for(Token token : tokens) {
-				Map<String, Object> map = composer.compose(token);
-				if (map.containsKey("TYPE")) {
-					String type = (String)map.get("TYPE");
+			for( Token token : tokenizer.getTokens() ) {
+				Map<String, Object> component = composer.compose(token);
+				
+				if (component.containsKey("TYPE")) {
+					String type = (String)component.get("TYPE");
 					switch (type) {
 					case "package":
-						packageName = (String) map.get("path");
+						packageName = (String) component.get("path");
 						if ( !structure.containsKey(packageName) ) {
 							structure.put(packageName, new ArrayList<ClassModel>() );
 						}
 						break;
 					case "import":
-						importList.add((String) map.get("path"));
+						importList.add((String) component.get("path"));
 						break;
 					case "class": case "interface": case "enum":
 						blocks.push("object");
-						map.put("package", packageName);
-						map.put("imports", importList);
-						mClass = new ClassModel(map);
+						component.put("package", packageName);
+						component.put("imports", importList);
+						mClass = new ClassModel(component);
 						classes.push(mClass);
 						break;
 					case "method":
-						isMethod = true;
+						if( "{".equals(token.getId()) ) {
+							isMethod = true;
+						}
 						blocks.push(type);
-						mMethod = new MethodModel(map);
+						mMethod = new MethodModel(component);
 						classes.peek().addMethod(mMethod);
 						break;
 					case "variable":
 						if (isMethod) {
-							mMethod.addVariable(map);
+							mMethod.addVariable(component);
 						} else {
-							classes.peek().addAttribute(map);
+							classes.peek().addAttribute(component);
 						}
 						break;
 					case "undefined":
 						if(classes.empty()) break;
 						ClassModel cm = classes.peek();
-						String id = (String) map.get("id");
+						String id = (String) component.get("id");
 						if(cm.containsAttribute(id)==false) {
-							if(mMethod!=null && mMethod.containsVariable(id)==false) {
+							if(isMethod && mMethod.containsVariable(id)==false) {
 								cm.addStaticInstance(id);
 							}
 						}
 						break;
 					}
-						
+				}
+
+				int lineNum = token.getLineNumber();
+				if(classes.isEmpty()==false) {
+					classes.peek().addLineNumbers(lineNum);
+				}
+				if(isMethod) {
+					mMethod.addLineNumbers(lineNum);
 				}
 				
 				if ("{".equals(token.getId())){

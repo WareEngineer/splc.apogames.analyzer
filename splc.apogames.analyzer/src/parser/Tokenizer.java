@@ -13,6 +13,7 @@ import java.util.Stack;
 public class Tokenizer {
 	private FileReader fileReader;
 	private List<Token> tokenList;
+	private int lineNumber;
 	
 	public Tokenizer(String path) {
 		setFileReader(path);
@@ -22,12 +23,13 @@ public class Tokenizer {
 		File file = new File(path);
 		try {
 			fileReader = new FileReader(file);
+			lineNumber = 1;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public List getTokens() {
+	public List<Token> getTokens() {
 		tokenList = new ArrayList<Token>();
 		StringBuffer buffer;
 		
@@ -44,8 +46,7 @@ public class Tokenizer {
 						if (isNumber(ch) || ch=='x' || ch=='X' || ch=='.' || ch=='f' || ch=='F' || ch=='l' || ch=='L') {
 							buffer.append( (char) ch);
 						} else {
-//							System.out.println(token.toString());
-							tokenList.add(new Token(TOKEN_TYPE.CONST, buffer.toString()));
+							tokenList.add(new Token(TOKEN_TYPE.CONST, buffer.toString(), lineNumber));
 							break;
 						}
 					}
@@ -60,8 +61,7 @@ public class Tokenizer {
 							}
 							if ( count%2 == 0 ) {
 								ch = fileReader.read();
-//								System.out.println(buffer.toString());
-								tokenList.add(new Token(TOKEN_TYPE.CONST, buffer.toString()));
+								tokenList.add(new Token(TOKEN_TYPE.CONST, buffer.toString(), lineNumber));
 								break;
 							}
 						}
@@ -71,13 +71,12 @@ public class Tokenizer {
 						if ( isAlphabet(ch) || isNumber(ch) || ch=='_' ) {
 							buffer.append( (char) ch);
 						} else {
-//							System.out.println(token.toString());
 							if ( isLiterals(buffer.toString()) ) {
-								tokenList.add(new Token(TOKEN_TYPE.CONST, buffer.toString()));
+								tokenList.add(new Token(TOKEN_TYPE.CONST, buffer.toString(), lineNumber));
 							} else if ( isKeyword(buffer.toString()) ) {
-								tokenList.add(new Token(TOKEN_TYPE.KEYWORD, buffer.toString()));
+								tokenList.add(new Token(TOKEN_TYPE.KEYWORD, buffer.toString(), lineNumber));
 							} else {
-								tokenList.add(new Token(TOKEN_TYPE.IDENTIFIER, buffer.toString()));
+								tokenList.add(new Token(TOKEN_TYPE.IDENTIFIER, buffer.toString(), lineNumber));
 							}
 							break;
 						}
@@ -86,7 +85,7 @@ public class Tokenizer {
 					while( true ) {
 						ch = fileReader.read();
 						if (ch == -1) {
-							tokenList.add(new Token(TOKEN_TYPE.SYMBOL, buffer.toString()));
+							tokenList.add(new Token(TOKEN_TYPE.SYMBOL, buffer.toString(), lineNumber));
 							break;
 						} else {
 							String op = buffer.toString() + (char)ch;
@@ -96,8 +95,7 @@ public class Tokenizer {
 							} else if ( isOperator(op) ) {
 								buffer.append( (char)ch );
 							} else {
-//								System.out.println(token.toString());
-								tokenList.add(new Token(TOKEN_TYPE.SYMBOL, buffer.toString()));
+								tokenList.add(new Token(TOKEN_TYPE.SYMBOL, buffer.toString(), lineNumber));
 								break;
 							}
 						}
@@ -137,6 +135,9 @@ public class Tokenizer {
 			if ("/*".equals(op)) {
 				int prech = ' ';
 				while( (c=fileReader.read()) != -1 ) {
+					if (c=='\n') {
+						lineNumber++;
+					}
 					if (prech=='*' && c=='/') {
 						return fileReader.read();
 //						break;
@@ -146,6 +147,7 @@ public class Tokenizer {
 			} else if ("//".equals(op)) {
 				while( (c=fileReader.read()) != -1 ) {
 					if (c=='\n') {
+						lineNumber++;
 						return fileReader.read();
 //						break;
 					}
@@ -210,6 +212,9 @@ public class Tokenizer {
 	}
 	
 	private boolean isWhiteSpace(int ch) {
+		if( ch == '\n') {
+			lineNumber++;
+		}
 		if( ch==' ' || ch=='\t' || ch=='\n' ) {
 			return true;
 		}

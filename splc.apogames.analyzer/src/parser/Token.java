@@ -11,10 +11,12 @@ interface TOKEN_TYPE {
 public class Token {
 	private final int type;
 	private final String id;
+	private final int lineNumber;
 	
-	public Token(int type, String id) {
+	public Token(int type, String id, int lineNumber) {
 		this.type = type;
 		this.id = id;
+		this.lineNumber = lineNumber;
 	}
 	
 	public int getType() {
@@ -23,6 +25,10 @@ public class Token {
 	
 	public String getId() {
 		return this.id;
+	}
+	
+	public int getLineNumber() {
+		return this.lineNumber;
 	}
 	
 	public boolean isKeyword() {

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class MethodModel {
+	private Set<Integer> lineNumbers;
 	private String myPerspective;
 	private String myReturn;
 	private String myId;
@@ -18,6 +19,7 @@ public class MethodModel {
 	
 	public MethodModel(Map<String, Object> map) {
 		myVariables = new LinkedHashMap<String, String>();
+		lineNumbers = new HashSet<Integer>();
 		
 		for (String key : map.keySet()) {
 			switch(key) {
@@ -41,6 +43,10 @@ public class MethodModel {
 				break;
 			}
 		}
+	}
+	
+	public void addLineNumbers(int lineNum) {
+		lineNumbers.add(lineNum);
 	}
 
 	public void addVariable(Map<String, Object> map) {
@@ -91,8 +97,9 @@ public class MethodModel {
 	
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
+		buffer.append( String.format("[LOC:%2d] ", lineNumbers.size()) );
 		buffer.append(myPerspective+" "+myReturn+" "+myId);
-
+		
 		buffer.append("(");
 		if ( !myParameters.isEmpty() ) {
 			for (String key : myParameters.keySet()) {
@@ -118,6 +125,8 @@ public class MethodModel {
 			}
 			buffer.delete(buffer.lastIndexOf(","), buffer.length());
 		}
+
+//		buffer.append( String.format("\n\t[LOC:%s] ", lineNumbers.toString()) );
 		
 		return buffer.toString();
 	}
@@ -131,6 +140,10 @@ public class MethodModel {
 
 	public Set<String> getVariable() {
 		return myVariables.keySet();
+	}
+
+	public Integer getLOC() {
+		return lineNumbers.size();
 	}
 
 }

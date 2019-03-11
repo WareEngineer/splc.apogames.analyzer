@@ -36,6 +36,7 @@ public class Main {
 
 		for(Game game : games.values()) {
 			System.out.println(game.toString());
+//			game.print();
 		}
 		
 		OverlapedArchitecture overlapedArchitecture = new OverlapedArchitecture(games);
@@ -43,6 +44,7 @@ public class Main {
 		overlapedArchitecture.printClasses();
 		overlapedArchitecture.printMatrix();
 		overlapedArchitecture.printTcci();
+//		overlapedArchitecture.printSimilarity();
 	}
 	
 	private static List<String> getGameTitles(String path) {
