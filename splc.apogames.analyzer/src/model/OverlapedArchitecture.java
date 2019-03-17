@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import grapher.Grapher;
+
 public class OverlapedArchitecture {
 	private Set<String> gameTitles;
 	private Map<String, Set<String>> clones;
@@ -26,6 +28,16 @@ public class OverlapedArchitecture {
 			}
 			map.get(key).add(value);
 		}
+	}
+	
+	public Map<String, OverlapedClass> getClasses() {
+		return overlapedClasses;
+	}
+	public Map<String, Set<String>> getCallRelations() {
+		return overlapedCallRelationMap;
+	}
+	public Map<String, Double> getTccis() {
+		return tccis;
 	}
 	
 	public OverlapedArchitecture(Map<String, Game> games) {

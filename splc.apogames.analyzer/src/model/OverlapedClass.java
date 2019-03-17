@@ -7,6 +7,7 @@ import java.util.Set;
 
 public class OverlapedClass {
 	private String className;
+	private Set<String> types;
 	private Set<String> gameTitles;
 	private Set<String> methodSignatures;
 	private Map<String, Set<String>> method2titles;
@@ -14,7 +15,16 @@ public class OverlapedClass {
 	private Map<String, Integer> method2maxLoc;
 	private int maxDistictClassLOC;
 	
+	public Set<String> getTypes() {
+		return types;
+	}
+	
+	public Set<String> getTitles() {
+		return gameTitles;
+	}
+	
 	public OverlapedClass(String className) {
+		types = new HashSet<String>();
 		gameTitles = new HashSet<String>();
 		methodSignatures = new HashSet<String>();
 		method2titles = new HashMap<String, Set<String>>();
@@ -25,6 +35,7 @@ public class OverlapedClass {
 	}
 
 	public void overlab(String title, ClassModel classModel) {
+		types.add(classModel.getType());
 		gameTitles.add(title);
 		for(MethodModel mm : classModel.getMethods()) {
 			String mSignature = mm.getSignature();

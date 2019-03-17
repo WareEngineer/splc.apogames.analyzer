@@ -215,4 +215,8 @@ public class ClassModel {
 		return lineNumbers.size() - accMethodLoc;
 	}
 
+	public String getType() {
+		return myType;
+	}
+
 }
