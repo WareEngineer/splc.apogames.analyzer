@@ -11,9 +11,9 @@ import java.util.Set;
 import grapher.Grapher;
 
 public class OverlapedArchitecture {
-	private Set<String> gameTitles;
-	private Map<String, Set<String>> clones;
-	private Map<String, Set<String>> reuses;
+	private Set<String> totalGameTitles;
+	private Map<String, Set<String>> totalClones;
+	private Map<String, Set<String>> totalReuses;
 	private Map<String, OverlapedClass> overlapedClasses;
 	private Map<String, Set<String>> overlapedCallRelationMap;
 	private Map<String, Set<String>> overlapedExtendRelationMap;
@@ -41,9 +41,9 @@ public class OverlapedArchitecture {
 	}
 	
 	public OverlapedArchitecture(Map<String, Game> games) {
-		gameTitles = new HashSet<String>();
-		clones = new HashMap<String, Set<String>>();
-		reuses = new HashMap<String, Set<String>>();
+		totalGameTitles = new HashSet<String>();
+		totalClones = new HashMap<String, Set<String>>();
+		totalReuses = new HashMap<String, Set<String>>();
 		overlapedClasses = new HashMap<String, OverlapedClass>();
 		overlapedCallRelationMap = new HashMap<String, Set<String>>();
 		overlapedExtendRelationMap = new HashMap<String, Set<String>>();
@@ -51,7 +51,7 @@ public class OverlapedArchitecture {
 		tccis = new HashMap<String, Double>();
 		
 		for(String title : games.keySet()) {
-			gameTitles.add(title);
+			totalGameTitles.add(title);
 			Game game = games.get(title);
 			
 			this.buildMap(overlapedCallRelationMap, game.getCallRelations(), title);
@@ -60,29 +60,29 @@ public class OverlapedArchitecture {
 			
 			for(ClassModel cm : game.getClonedClasses()) {
 				String cName = cm.getPath();
-				if(clones.containsKey(cName)==false) {
-					clones.put(cName, new HashSet<String>());
+				if(totalClones.containsKey(cName)==false) {
+					totalClones.put(cName, new HashSet<String>());
 				}
-				clones.get(cName).add(title);
+				totalClones.get(cName).add(title);
 			}
 			
 			for(ClassModel cm : game.getReusedClasses()) {
 				String cName = cm.getPath();
-				if(reuses.containsKey(cName) == false) {
-					reuses.put(cName, new HashSet<String>());
+				if(totalReuses.containsKey(cName) == false) {
+					totalReuses.put(cName, new HashSet<String>());
 					overlapedClasses.put(cName, new OverlapedClass(cName));
 				}
-				reuses.get(cName).add(title);
+				totalReuses.get(cName).add(title);
 				overlapedClasses.get(cName).overlab(title, cm);
 			}
 		}
 		
 		
-		for(String id : reuses.keySet()) {
+		for(String id : totalReuses.keySet()) {
 			Set<String> distinctComponents = new HashSet<String>();
 			int sigma=0;
 			
-			for(String title : reuses.get(id)) {
+			for(String title : totalReuses.get(id)) {
 				Game game = games.get(title);
 				
 				ClassModel cm = game.getClassModel(id);
@@ -118,7 +118,7 @@ public class OverlapedArchitecture {
 		for(Double value : values) {
 			for(String key : keys) {
 				if(tccis.get(key).equals(value)) {
-					String s = String.format("%-45s [%2d] : %3.2f", key, reuses.get(key).size(), tccis.get(key));
+					String s = String.format("%-45s [%2d] : %3.2f", key, totalReuses.get(key).size(), tccis.get(key));
 					System.out.println(s);
 				}
 			}
@@ -158,9 +158,9 @@ public class OverlapedArchitecture {
 		List<String> list = new ArrayList<String>(overlapedClasses.keySet()); 
 		Collections.sort(list);
 		
-		for(int i=0; i<=gameTitles.size(); i++) {
+		for(int i=0; i<=totalGameTitles.size(); i++) {
 			for(String item : list) {
-				if(reuses.get(item).size() == i) {
+				if(totalReuses.get(item).size() == i) {
 					int pos = item.lastIndexOf('.');
 					String pName = item.substring(0, pos);
 					String cName = item.substring(pos+1);
@@ -170,14 +170,14 @@ public class OverlapedArchitecture {
 			}
 		}
 		System.out.println("------------------------------------------------------");
-		String s = String.format("OVERLAP || Poduct:%d, Clone:%d, Reuse:%d", gameTitles.size(), clones.size(), reuses.size());
+		String s = String.format("OVERLAP || Poduct:%d, Clone:%d, Reuse:%d", totalGameTitles.size(), totalClones.size(), totalReuses.size());
 		System.out.println(s);
 		System.out.println("------------------------------------------------------");
 	}
 
 	public void printClasses() {
 		for(String cName : overlapedClasses.keySet()) {
-			String fn = reuses.get(cName).size() + "/" + gameTitles.size();
+			String fn = totalReuses.get(cName).size() + "/" + totalGameTitles.size();
 			String s = String.format("%5s :: %s", fn, cName);
 			System.out.println(s);
 			overlapedClasses.get(cName).print();

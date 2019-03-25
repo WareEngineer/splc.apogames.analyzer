@@ -39,16 +39,8 @@ public class GraphNode {
 		texts.get(TOP).add(new Text(text, "TimesRoman", Font.PLAIN, fontSize+2));
 		texts.get(MIDDLE).add(new Text(String.format("%.2f", tcci), "TimesRoman", Font.BOLD, fontSize+1));
 		
-		drawX += 150 + fontSize*5;
-		if(drawX > 1500) {
-			drawX = 50;
-			drawY += 80 + fontSize*5;
-		}
-		
-		this.x = drawX;
-		this.y = drawY;
-//		this.x = (int) (Math.random()*1150+50);
-//		this.y = (int) (Math.random()*900+50);
+		this.x = (int) (Math.random()*1250+50);
+		this.y = (int) (Math.random()*900+50);
 	}
 	
 	public GraphNode(String text, double tcci) {

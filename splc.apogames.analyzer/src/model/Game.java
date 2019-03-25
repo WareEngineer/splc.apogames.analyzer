@@ -13,7 +13,6 @@ import java.util.Set;
 public class Game {
 	private final String title;
 	private final Map<String, List<ClassModel>> architecture;
-	private Set<String> allClassPaths;
 	private Set<ClassModel> allClasses;
 	private Set<ClassModel> writtenClasses;
 	private Set<ClassModel> clonedClasses;
@@ -21,8 +20,6 @@ public class Game {
 	private Set<String> callRelations;
 	private Set<String> extendRelations;
 	private Set<String> implementsRelations;
-	private List<String> gPaths;
-	private Set<String> cNames;
 	
 	public Set<ClassModel> getClonedClasses() {
 		return this.clonedClasses;
@@ -30,14 +27,6 @@ public class Game {
 	
 	public Set<ClassModel> getReusedClasses() {
 		return this.reusedClasses;
-	}
-	
-	public Set<String> getOrgClassNames() {
-		return this.cNames;
-	}
-	
-	public List<String> getGraphPaths() {
-		return this.gPaths;
 	}
 	
 	public void print() {
@@ -51,7 +40,6 @@ public class Game {
 	public Game(String title, Map<String, List<ClassModel>> architecture) {
 		this.title = title;
 		this.architecture = architecture;
-		this.allClassPaths = new HashSet<String>();
 		this.allClasses = new HashSet<ClassModel>();
 		this.writtenClasses = new HashSet<ClassModel>();
 		this.clonedClasses = new HashSet<ClassModel>();
@@ -59,14 +47,11 @@ public class Game {
 		this.callRelations = new HashSet<String>();
 		this.extendRelations = new HashSet<String>();
 		this.implementsRelations = new HashSet<String>();
-		this.gPaths = new ArrayList<String>();
-		this.cNames = new HashSet<String>();
 		
 		for(String packageName : architecture.keySet()) {
 			List<ClassModel> classes = architecture.get(packageName);
 			for (ClassModel mClass : classes) {
 				allClasses.add(mClass);
-				allClassPaths.add(mClass.getPath());
 				if (packageName.startsWith("org.")) {
 					clonedClasses.add(mClass);
 				} else {
@@ -110,22 +95,6 @@ public class Game {
 							}
 						}
 						break;	// 명시적 선언이 묵시적 선언보다 우선함
-					}
-				}
-			}
-		}
-		
-		for(String packageName : architecture.keySet()) {
-			if(packageName.contains("org.") == false) {
-				continue;
-			}
-			for(ClassModel classModel : architecture.get(packageName)) {
-				cNames.add(packageName+"."+classModel.getClassName());
-				if(classModel.getMethods().isEmpty()) {
-					gPaths.add(this.title+"<-"+packageName+"."+classModel.getClassName());
-				} else {
-					for(MethodModel methodModel : classModel.getMethods()) {
-						gPaths.add(this.title+"<-"+packageName+"."+classModel.getClassName()+"<-"+methodModel.getSignature());
 					}
 				}
 			}
