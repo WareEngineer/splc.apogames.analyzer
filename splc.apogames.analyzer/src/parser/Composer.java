@@ -255,7 +255,7 @@ public class Composer {
 			classGeneticCount = 0;
 			classMap = new HashMap<String, Object>();
 			classMap.put("TYPE", null);
-			classMap.put("perspective", "default");
+			classMap.put("accessibility", "default");
 			classMap.put("identifier", null);
 			classMap.put("extends", new Stack<String>());
 			classMap.put("implements", new Stack<String>());
@@ -298,7 +298,7 @@ public class Composer {
 				case 0: 
 					String s = token.getId();
 					if ( "public".equals(s) || "protected".equals(s) || "private".equals(s) ) {
-						classMap.replace("perspective", s);
+						classMap.replace("accessibility", s);
 					} else {
 						classMap.put(s, s); 
 					} 
@@ -389,7 +389,7 @@ public class Composer {
 			methodGeneticCount = 0;
 			methodMap = new HashMap<String, Object>();
 			methodMap.put("TYPE", "method");
-			methodMap.put("perspective", "default");
+			methodMap.put("accessibility", "default");
 			methodMap.put("return", null);
 			methodMap.put("identifier", null);
 			methodMap.put("parameters", new LinkedHashMap<String, String>());
@@ -428,7 +428,7 @@ public class Composer {
 				case 0: 
 					String s = token.getId();
 					if ( "public".equals(s) || "protected".equals(s) || "private".equals(s) ) {
-						methodMap.replace("perspective", s);
+						methodMap.replace("accessibility", s);
 					} else {
 						methodMap.put(s, s);
 					} 
@@ -560,7 +560,7 @@ public class Composer {
 			variableGeneticCount = 0;
 			variableMap = new HashMap<String, Object>();
 			variableMap.put("TYPE", "variable");
-			variableMap.put("perspective", "default");
+			variableMap.put("accessibility", "default");
 			variableMap.put("dataType", null);
 			variableMap.put("identifier", null);
 			variableStep = 0;
@@ -593,7 +593,7 @@ public class Composer {
 				case 0: 
 					String s = token.getId();
 					if ( "public".equals(s) || "protected".equals(s) || "private".equals(s) ) {
-						variableMap.replace("perspective", s);
+						variableMap.replace("accessibility", s);
 					} else {
 						variableMap.put(s, s);
 					} 

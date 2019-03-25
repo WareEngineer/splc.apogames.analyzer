@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class MethodModel {
 	private Set<Integer> lineNumbers;
-	private String myPerspective;
+	private String myAccessibility;
 	private String myReturn;
 	private String myId;
 	private Map<String, String> myParameters;
@@ -23,8 +23,8 @@ public class MethodModel {
 		
 		for (String key : map.keySet()) {
 			switch(key) {
-			case "perspective":
-				myPerspective = (String) map.get(key);
+			case "accessibility":
+				myAccessibility = (String) map.get(key);
 				break;
 			case "return":
 				myReturn = (String) map.get(key);
@@ -72,7 +72,7 @@ public class MethodModel {
 	
 	public String getSignature() {
 		StringBuffer buffer = new StringBuffer();
-		buffer.append(myPerspective+" "+myReturn+" "+myId);
+		buffer.append(myAccessibility+" "+myReturn+" "+myId);
 
 		buffer.append("(");
 		if ( !myParameters.isEmpty() ) {
@@ -98,7 +98,7 @@ public class MethodModel {
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append( String.format("[LOC:%2d] ", lineNumbers.size()) );
-		buffer.append(myPerspective+" "+myReturn+" "+myId);
+		buffer.append(myAccessibility+" "+myReturn+" "+myId);
 		
 		buffer.append("(");
 		if ( !myParameters.isEmpty() ) {

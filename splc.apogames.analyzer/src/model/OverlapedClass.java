@@ -15,6 +15,11 @@ public class OverlapedClass {
 	private Map<String, Integer> method2maxLoc;
 	private int maxDistictClassLOC;
 	
+	public String getType() {
+		String s = "¡ì" + types.toString().substring(1, types.toString().length()-1) + "¡í";;
+		return s;
+	}
+	
 	public Set<String> getTypes() {
 		return types;
 	}

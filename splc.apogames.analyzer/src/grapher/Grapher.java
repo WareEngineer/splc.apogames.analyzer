@@ -28,6 +28,10 @@ public class Grapher extends JFrame implements MouseWheelListener, MouseListener
 	private List<GraphNode> nodes = new ArrayList<GraphNode>();
 	private List<GraphEdge> edges = new ArrayList<GraphEdge>();
 	private List<GraphNode> pressed = new ArrayList<GraphNode>();
+	private double minNodeVal = 0.0;
+	private double maxNodeVal = 1.0;
+	private double minEdgeWgt = 0.0;
+	private double maxEdgeWgt = 1.0;
 	private Point startPoint;
 	private int x;
 	private int y;
@@ -50,55 +54,44 @@ public class Grapher extends JFrame implements MouseWheelListener, MouseListener
 		
 		g.translate(x, y);
 		
-		Map<GraphNode, Integer> m1 = new HashMap<GraphNode, Integer>();
+		List<GraphNode> invisibleNodes = new ArrayList<GraphNode>();
+		
 		for(GraphNode node : nodes) {
-			m1.put(node, 0);
-		}
-		for(GraphEdge edge : edges) {
-			GraphNode from = edge.getFrom();
-			GraphNode to = edge.getTo();
-			m1.replace(from, m1.get(from)+1);
-			m1.replace(to, m1.get(to)+1);
-		}
-		
-		Map<Integer, List<GraphNode>> m2 = new HashMap<Integer, List<GraphNode>>();
-		for(GraphNode key : m1.keySet()) {
-			Integer val = m1.get(key);
-			if(m2.containsKey(val) == false) {
-				m2.put(val, new ArrayList<GraphNode>());
-			}
-			m2.get(val).add(key);
-		}
-		
-		List<Integer> keys = new ArrayList<Integer>(m2.keySet());
-		Collections.sort(keys);
-		for(Integer key : keys) {
-			for(GraphNode node : m2.get(key)) {
+			double nodeValue = node.getValue();
+			if( minNodeVal <= nodeValue && nodeValue <= maxNodeVal ) {
 				node.draw(g);
+			} else {
+				invisibleNodes.add(node);
 			}
 		}
 		
 		for(GraphEdge edge : edges) {
-			edge.draw(g);
+			double edgeWeight = edge.getWeight();
+			if( minEdgeWgt <= edgeWeight && edgeWeight <= maxEdgeWgt ) {
+				boolean visible = true;
+				for(GraphNode node : invisibleNodes) {
+					if(edge.contains(node)) {
+						visible=false;
+						break;
+					}
+				}
+				if(visible) {
+					edge.draw(g);
+				}
+			}
 		}
 	}
 	
-	public void addNode(String item, double tcci, String type) {
-		GraphNode node = new GraphNode(item, tcci, type);
-		nodes.add(node);
-		map.put(item, node);
+	public void setNodes(Map<String, GraphNode> nodes) {
+		this.map = nodes;
+		for(GraphNode node : nodes.values()) {
+			this.nodes.add(node);
+		}
+		this.repaint();
 	}
 	
-	public void addNode(String item, double tcci) {
-		this.addNode(item, tcci, null);
-	}
-	
-	public void addEdge(String item, double weight) {
-		String[] tokens = item.split("->");
-		GraphNode from = map.get(tokens[0]);
-		GraphNode to = map.get(tokens[1]);
-		GraphEdge edge = new GraphEdge(from, to, weight);
-		edges.add(edge);
+	public void setEdges(List<GraphEdge> edges) {
+		this.edges = edges;
 	}
 
 	@Override

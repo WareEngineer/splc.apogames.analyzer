@@ -1,5 +1,6 @@
 package grapher;
 
+import java.awt.Canvas;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.util.ArrayList;
@@ -9,99 +10,87 @@ import java.util.List;
 import java.util.Map;
 
 public class GraphNode {
-	private static final int TOP = 1;
-	private static final int MIDDLE = 2;
-	private static final int BOTTOM = 3;
 	private static final int initFontSize = 10;
-	private static int drawX = 50;
-	private static int drawY = 50;
-	private int fontSize = initFontSize;
 	private int x;
 	private int y;
 	private int width;
 	private int height;
-	private Map<Integer, List<Text>> texts = new HashMap<Integer, List<Text>>();
+	private double value = 0;
+	private List<Object> contents = new ArrayList<Object>();
 	
 	public int getX() { return x; }
 	public int getY() { return y; }
 	public int getWidth() { return width; }
 	public int getHeight() { return height; }
 	
-	public GraphNode(String text, double tcci, String stereotype) {
-		texts.put(TOP, new ArrayList<Text>());
-		texts.put(MIDDLE, new ArrayList<Text>());
-		texts.put(BOTTOM, new ArrayList<Text>());
-		
-		if(stereotype != null) { 
-			String st = "¡ì" + stereotype + "¡í";
-			texts.get(TOP).add(new Text(st, "TimesRoman", Font.ITALIC, fontSize));
-		}
-		texts.get(TOP).add(new Text(text, "TimesRoman", Font.PLAIN, fontSize+2));
-		texts.get(MIDDLE).add(new Text(String.format("%.2f", tcci), "TimesRoman", Font.BOLD, fontSize+1));
-		
+	public String toString() {
+		return "hello";
+	}
+	
+	public GraphNode() {
 		this.x = (int) (Math.random()*1250+50);
 		this.y = (int) (Math.random()*900+50);
 	}
 	
-	public GraphNode(String text, double tcci) {
-		this(text, tcci, null);
+	public void setValue(double value) {
+		this.value = value;
+	}
+	
+	public double getValue() {
+		return this.value;
+	}
+	
+	public void addText(String text) {
+		this.addText(text, Font.PLAIN, initFontSize);
+	}
+	
+	public void addText(String text, int size) {
+		this.addText(text, Font.PLAIN, size);
+	}
+	
+	public void addText(String text, int size, int style) {
+		Txt txt = new Txt(text, "TimesRoman", style, size);
+		this.contents.add(txt);
+	}
+	
+	public void addLine() {
+		Line line = new Line();
+		this.contents.add(line);
 	}
 	
 	public void draw(Graphics g) {
 		width = 0;
 		height = 0;
 		
-		for(List<Text> list : texts.values()) {
-			for(Text text : list) {
-				int rectWidth = (int) (text.getWidth() * 1.2);
+		for(Object content : contents) {
+			if(content instanceof Txt) {
+				Txt txt = (Txt) content;
+				int rectWidth = (int) (txt.getWidth() * 1.2);
 				if(width < rectWidth) {
 					width = rectWidth;
 				}
 			}
 		}
 		
-		for(int level=TOP; level<BOTTOM; level++) {
-			for(Text text : texts.get(level)) {
-				int textWidth = text.getWidth();
-				int textHeight = text.getFont().getSize();
+		for(Object content : contents) {
+			if(content instanceof Txt) {
+				Txt txt = (Txt) content;
+				int textWidth = txt.getWidth();
+				int textHeight = txt.getFont().getSize();
 				
 				int textX = x + (width-textWidth)/2;
 				int textY = y + height + textHeight;
+
+				height += (int) (txt.getFont().getSize()*1.4);
 				
-				g.setFont(text.getFont());
-				g.drawString(text.getText(), textX, textY);
-				
-				height += (int) (text.getFont().getSize()*1.4);
+				g.setFont(txt.getFont());
+				g.drawString(txt.getText(), textX, textY);
+			} else if(content instanceof Line) {
+				g.drawLine(x, y+height, x+width, y+height);
 			}
-			g.drawLine(x, y+height, x+width, y+height);
 		}
 		
 		g.drawRect(x, y, width, height);
-	}
-	
-	public void zoomIn() {
-		fontSize++;
-		this.x += (fontSize)-initFontSize;
-		this.y += (fontSize)-initFontSize;
-		for(List<Text> list : texts.values()) {
-			for(Text text : list) {
-				text.increaseFontSize();
-			}
-		}
-	}
-	
-	public void zoomOut() {
-		if(fontSize > 1) {
-			this.x -= (fontSize)-initFontSize;
-			this.y -= (fontSize)-initFontSize;
-			for(List<Text> list : texts.values()) {
-				for(Text text : list) {
-					text.decreaseFontSize();
-				}
-			}
-//			System.out.println(fontSize);
-			fontSize--;
-		}
 	}
 	
 	public boolean isMouseOn(int mouseX, int mouseY) {
@@ -117,4 +106,56 @@ public class GraphNode {
 		this.x += dx;
 		this.y += dy;
 	}
+	
+	public void zoomIn() {
+		for(Object content : contents) {
+			if(content instanceof Txt) {
+				((Txt)content).zoomIn();;
+			}
+		}
+	}
+	
+	public void zoomOut() {
+		for(Object content : contents) {
+			if(content instanceof Txt) {
+				((Txt)content).zoomOut();;
+			}
+		}
+	}
 }
+
+class Txt {
+	private static Canvas canvas = new Canvas();
+	private static Map<String, Font> fontPool = new HashMap<String, Font>();
+	private String txt;
+	private Font font;
+	
+	public Font getFont() { return this.font; }
+	public String getText() { return this.txt; }
+	
+	public Txt(String txt, String name, int style, int size) {
+		String key = name + style + ":"+ size;
+		if(fontPool.containsKey(key) == false) {
+			fontPool.put(key, new Font(name, style, size));
+		}
+		this.font = fontPool.get(key);
+		this.txt = txt;
+	}
+	
+	public int getWidth() {
+		return canvas.getFontMetrics(font).stringWidth(txt);
+	}
+	public int getHeight() {
+		return font.getSize();
+	}
+	
+	public void zoomIn() {
+		font = new Font(font.getName(), font.getStyle(), font.getSize()+1);
+	}
+	
+	public void zoomOut() {
+		font = new Font(font.getName(), font.getStyle(), font.getSize()-1);
+	}
+}
+
+class Line { }

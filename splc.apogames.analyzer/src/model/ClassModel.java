@@ -14,7 +14,7 @@ public class ClassModel {
 
 	private Set<Integer> lineNumbers;
 	private String myType;
-	private String myPerspective;
+	private String myAccessibility;
 	private String myPackage;
 	private Set<String> myImports;
 	private Set<String> myImplicitImports;
@@ -41,8 +41,8 @@ public class ClassModel {
 			case "imports":
 				myImports = (Set<String>) map.get("imports");	
 				break;
-			case "perspective":
-				myPerspective = key;
+			case "accessibility":
+				myAccessibility = key;
 				break;
 			case "TYPE":
 				myType = (String) map.get("TYPE");
@@ -63,7 +63,7 @@ public class ClassModel {
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("[" + myType + "]");
-		buffer.append(myPerspective+" "+myId);
+		buffer.append(myAccessibility+" "+myId);
 		buffer.append("\n  |=>Package    :" + myPackage);
 		buffer.append("\n  |=>LineOfCode :" + lineNumbers.size());
 		if (myImports != null) {
