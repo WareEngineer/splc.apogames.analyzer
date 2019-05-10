@@ -2,6 +2,7 @@ package model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -49,8 +50,8 @@ public class Game {
 		this.implementsRelations = new HashSet<String>();
 		
 		for(String packageName : architecture.keySet()) {
-			List<ClassModel> classes = architecture.get(packageName);
-			for (ClassModel mClass : classes) {
+			List<ClassModel> classList = architecture.get(packageName);
+			for (ClassModel mClass : classList) {
 				allClasses.add(mClass);
 				if (packageName.startsWith("org.")) {
 					clonedClasses.add(mClass);
@@ -63,14 +64,12 @@ public class Game {
 		Queue<ClassModel> queue = new LinkedList<ClassModel>();
 		Set<String> visitedPath = new HashSet<String>();
 		queue.addAll(writtenClasses);
-		
+		for(ClassModel cm : writtenClasses) {
+			visitedPath.add(cm.getPath());
+		}
+
 		while( !queue.isEmpty() ) {
 			ClassModel mClass = queue.poll();
-			visitedPath.add(mClass.getPath());
-			
-//			System.out.println("####" + mClass.getPath());
-//			System.out.println(mClass.getAttribute());
-//			System.out.println(mClass.getStaticInstances().toString());
 			
 			List<String> imports = new ArrayList<String>();
 			imports.addAll(mClass.getImports());
@@ -82,19 +81,19 @@ public class Game {
 			
 			for(String type : mClass.getAllUsedTypes()) {
 				String suffix = "." + type;
-
 				for(String path : imports) {
 					if(path.endsWith(suffix)) {
 						if(!visitedPath.contains(path)) {
 							ClassModel cm = this.getClassModel(path);
 							if(cm!=null) {
 								queue.offer(cm);
+								visitedPath.add(cm.getPath());
 								if(path.startsWith("org.")) {
 									reusedClasses.add(cm);
 								}
 							}
 						}
-						break;	// 명시적 선언이 묵시적 선언보다 우선함
+						break;
 					}
 				}
 			}
@@ -117,7 +116,7 @@ public class Game {
 					}
 					
 					relations.add(relation);
-					break; 	// 명시적 선언이 묵시적 선언보다 우선함
+					break;
 				}
 			}
 		}

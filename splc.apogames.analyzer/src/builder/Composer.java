@@ -1,4 +1,4 @@
-package parser;
+package builder;
 
 import java.util.Map;
 import java.util.Queue;
@@ -118,8 +118,32 @@ public class Composer {
 		VARIABLE.put(8, Arrays.asList(";"));
 	}
 	
+	public List<Map<String, Object>> getChunks(List<Token> tokens) {
+		List<Map<String, Object>> chunks = new ArrayList<Map<String, Object>>();
+		
+		Map<String, Object> leftBraces= new HashMap<String, Object>();
+		leftBraces.put("TYPE", "{");
+		Map<String, Object> rightBraces= new HashMap<String, Object>();
+		rightBraces.put("TYPE", "}");
+		
+		for( Token token : tokens ) {
+			Map<String, Object> chunk = compose(token);
+			if(!chunk.isEmpty() ) {
+				chunks.add(chunk);
+			}
+			if("{".equals(token.getId())) {
+				chunks.add(leftBraces);
+			}
+			if("}".equals(token.getId())) {
+				chunks.add(rightBraces);
+			}
+		}
+		
+		return chunks;
+	}
+	
 	public Map<String, Object> compose(Token token) {
-		Map<String, Object> tmp = new HashMap();
+		Map<String, Object> tmp = new HashMap<String, Object>();
 		int count = 0;
 		
 		// 어노테이션 무시
@@ -170,7 +194,7 @@ public class Composer {
 			}
 		}
 		
-		return tmp;
+		return new HashMap<String, Object>(tmp);
 	}
 	
 	private boolean composeStaticClass(Token token) {

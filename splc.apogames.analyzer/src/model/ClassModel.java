@@ -42,7 +42,7 @@ public class ClassModel {
 				myImports = (Set<String>) map.get("imports");	
 				break;
 			case "accessibility":
-				myAccessibility = key;
+				myAccessibility = (String) map.get("accessibility");
 				break;
 			case "TYPE":
 				myType = (String) map.get("TYPE");
@@ -217,6 +217,10 @@ public class ClassModel {
 
 	public String getType() {
 		return myType;
+	}
+
+	public void setImplicitImports(Set<String> implicitImports) {
+		myImplicitImports = implicitImports;
 	}
 
 }

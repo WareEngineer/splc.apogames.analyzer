@@ -1,4 +1,4 @@
-package parser;
+package builder;
 
 interface TOKEN_TYPE {
 	int EOF = -1;

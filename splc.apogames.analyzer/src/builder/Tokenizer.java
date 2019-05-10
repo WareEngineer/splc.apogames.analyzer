@@ -1,5 +1,5 @@
 
-package parser;
+package builder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,10 +15,6 @@ public class Tokenizer {
 	private List<Token> tokenList;
 	private int lineNumber;
 	
-	public Tokenizer(String path) {
-		setFileReader(path);
-	}
-
 	private void setFileReader(String path) {
 		File file = new File(path);
 		try {
@@ -29,7 +25,9 @@ public class Tokenizer {
 		}
 	}
 	
-	public List<Token> getTokens() {
+	public List<Token> getTokens(String path) {
+		setFileReader(path);
+		
 		tokenList = new ArrayList<Token>();
 		StringBuffer buffer;
 		
@@ -101,7 +99,9 @@ public class Tokenizer {
 						}
 					}
 				} else {
-					System.out.print("ERROR");
+					if(ch != 13) {
+						System.out.print("ERROR");
+					}
 					ch=fileReader.read();
 				}
 				ch = skipWhiteSpace(ch);
