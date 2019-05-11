@@ -3,6 +3,7 @@ import java.util.Map;
 
 import builder.Builder;
 import grapher.Adapter;
+import grapher.GraphInfo;
 import grapher.Grapher;
 import model.Game;
 import model.OverlapedArchitecture;
@@ -25,10 +26,11 @@ public class Main {
 		OverlapedArchitecture olArch = overlapper.getOverlapedArchitecture();
 		
 		Adapter adapter = new Adapter(olArch);
+//		GraphInfo graphInfo = adapter.getGraphInfoOfClassLevel();
+		GraphInfo graphInfo = adapter.getGraphInfoOfPackageLevel();
 		
 		Grapher grapher = new Grapher();
-		grapher.setNodes(adapter.getNodes());
-		grapher.setEdges(adapter.getEdges());
+		grapher.setGraph(graphInfo);
 		grapher.draw();
 	}
 }

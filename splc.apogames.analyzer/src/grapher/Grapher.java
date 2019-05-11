@@ -3,22 +3,15 @@ package grapher;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import java.awt.Canvas;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +24,6 @@ import java.awt.event.ActionEvent;
 
 public class Grapher extends JFrame implements MouseWheelListener, MouseListener{
 	private JFrame frame;
-	private Map<String, GraphNode> map = new HashMap<String, GraphNode>();
 	private List<GraphNode> nodes = new ArrayList<GraphNode>();
 	private List<GraphEdge> edges = new ArrayList<GraphEdge>();
 	private List<GraphNode> pressed = new ArrayList<GraphNode>();
@@ -62,6 +54,12 @@ public class Grapher extends JFrame implements MouseWheelListener, MouseListener
 		this.y = this.getY();
 	}
 	
+	public void setGraph(GraphInfo graphInfo) {
+		this.nodes = graphInfo.getNodeInfo();
+		this.edges = graphInfo.getEdgeInfo();
+		this.repaint();
+	}
+
 	public void drawFilter() {
 		JPanel panel = new JPanel();
 		panel.setBounds(0, 0, 162, 118);
@@ -161,18 +159,6 @@ public class Grapher extends JFrame implements MouseWheelListener, MouseListener
 		}
 	}
 	
-	public void setNodes(Map<String, GraphNode> nodes) {
-		this.map = nodes;
-		for(GraphNode node : nodes.values()) {
-			this.nodes.add(node);
-		}
-		this.repaint();
-	}
-	
-	public void setEdges(List<GraphEdge> edges) {
-		this.edges = edges;
-	}
-
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		//Zoom in
