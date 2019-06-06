@@ -265,7 +265,7 @@ public class Tokenizer {
 	private boolean isOperator(String str) {
 		switch (str) {
 		case "+": case "+=": case "++":
-		case "-": case "-=":
+		case "-": case "-=": case "--":
 		case "*": case "*=":
 		case "/": case "/=": case "//": case "/*":
 		case "%": case "%=":
