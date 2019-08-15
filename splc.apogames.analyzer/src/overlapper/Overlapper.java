@@ -43,31 +43,41 @@ public class Overlapper {
 
 	private void setTcci(Map<String, Game> games) {
 		Map<String, Double> tccis = new HashMap<String, Double>();
-		Map<String, Set<String>> reuseInfo = olArch.getReuseInfo();
-		for(String cName : reuseInfo.keySet()) {
+		Set<String> reusedClassPaths = olArch.getReuseInfo().keySet();
+		Set<String> gameTitles = olArch.getTitleInfo();
+		boolean isAllEqual = true;
+		
+		for(String classPath : reusedClassPaths) {
 			Set<String> distinctComponents = new HashSet<String>();
+			ClassModel baseCm = null;
 			int sigma=0;
-			
-			for(String title : reuseInfo.get(cName)) {
-				Game game = games.get(title);
-				ClassModel cm = game.getClassModel(cName);
-				if(cm!=null) {
+			int dummy=0;
+			for(String title : gameTitles) {
+				ClassModel cm = games.get(title).getClassModel(classPath);
+				if(cm==null) {
+					dummy++;
 					sigma++;
-					distinctComponents.add(game.getTitle() + cName);
+					isAllEqual = false;
+				} else {
+					sigma++;
 					for(MethodModel mm : cm.getMethods()) {
-						sigma++;
 						distinctComponents.add(mm.getSignature());
+						sigma++;
 					}
-
-					int d = distinctComponents.size();
-					if(sigma == 1) {
-						d = 2;
-						sigma = 2;	
+					
+					if(baseCm == null) {
+						baseCm = cm;
+					} else if (baseCm.equals(cm) == false){
+						isAllEqual = false;
 					}
-					double tcci = 1.0 - ( (d-1.0) / (sigma-1.0) );
-					tccis.put(cName, tcci);
 				}
 			}
+			int d = 1 + dummy + distinctComponents.size();
+			double tcci = 1.0 - ( (d-1.0) / (sigma-1.0) );
+			if(isAllEqual) { 
+				tcci = 1.0; 
+			}
+			tccis.put(classPath, tcci);
 		}
 		olArch.setTcciInfo(tccis);
 	}

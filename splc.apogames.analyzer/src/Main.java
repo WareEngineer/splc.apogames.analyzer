@@ -11,6 +11,7 @@ import overlapper.Overlapper;
 
 public class Main {
 	static String commonPath = "C:/Users/user/eclipse-workspace/Java/";
+//	static String commonPath = "C:/Users/user/eclipse-workspace/SPLtest/";
 	
 	public static void main(String[] args) {
 		Builder builder = new Builder(commonPath);

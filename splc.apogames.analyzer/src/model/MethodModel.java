@@ -97,7 +97,7 @@ public class MethodModel {
 	
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
-		buffer.append( String.format("[LOC:%2d] ", lineNumbers.size()) );
+//		buffer.append( String.format("[LOC:%2d] ", lineNumbers.size()) );
 		buffer.append(myAccessibility+" "+myReturn+" "+myId);
 		
 		buffer.append("(");

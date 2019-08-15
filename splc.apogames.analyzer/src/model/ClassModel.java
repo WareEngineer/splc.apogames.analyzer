@@ -223,4 +223,21 @@ public class ClassModel {
 		myImplicitImports = implicitImports;
 	}
 
+	public boolean equals(ClassModel cm) {
+		Set<String> mSet = new HashSet<String>();
+		
+		if(this.myMethods.size() == cm.myMethods.size()) {
+			for(MethodModel mm : this.myMethods) {
+				mSet.add(mm.getSignature());
+			}
+			for(MethodModel mm : cm.myMethods) {
+				if(mSet.contains(mm.getSignature()) == false) {
+					return false;
+				}
+			}
+			return true;
+		}
+		
+		return false;
+	}
 }
