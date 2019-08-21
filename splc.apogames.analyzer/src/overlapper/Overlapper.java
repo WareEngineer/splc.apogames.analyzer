@@ -42,7 +42,7 @@ public class Overlapper {
 	}
 
 	private void setTcci(Map<String, Game> games) {
-		Map<String, Double> tccis = new HashMap<String, Double>();
+		Map<String, Double> similarities = new HashMap<String, Double>();
 		Set<String> reusedClassPaths = olArch.getReuseInfo().keySet();
 		Set<String> gameTitles = olArch.getTitleInfo();
 		boolean isAllEqual = true;
@@ -77,9 +77,15 @@ public class Overlapper {
 			if(isAllEqual) { 
 				tcci = 1.0; 
 			}
-			tccis.put(classPath, tcci);
+			
+			int participant = olArch.getReuseInfo().get(classPath).size();
+			int whole = olArch.getTitleInfo().size();
+			double p_rate = (double)participant / (double)whole;
+			
+			double similarity = tcci * p_rate;
+			similarities.put(classPath, similarity);
 		}
-		olArch.setTcciInfo(tccis);
+		olArch.setTcciInfo(similarities);
 	}
 	
 	public void printTcci() {
@@ -90,6 +96,7 @@ public class Overlapper {
 		List<Double> values = new ArrayList<Double>(set);
 		Collections.sort(values);
 		
+		System.out.println("TCCI");
 		for(Double value : values) {
 			for(String key : keys) {
 				if(tccis.get(key).equals(value)) {
