@@ -65,7 +65,7 @@ public class Game {
 		Set<String> visitedPath = new HashSet<String>();
 		queue.addAll(writtenClasses);
 		for(ClassModel cm : writtenClasses) {
-			visitedPath.add(cm.getPath());
+			visitedPath.add(cm.getFullName());
 		}
 
 		while( !queue.isEmpty() ) {
@@ -75,9 +75,9 @@ public class Game {
 			imports.addAll(mClass.getImports());
 			imports.addAll(mClass.getImplicitImports());
 			
-			callRelations.addAll( getRelations(imports, mClass.getPath(), mClass.getAllVariables()) );
-			extendRelations.addAll( getRelations(imports, mClass.getPath(), mClass.getExtends()) );
-			implementsRelations.addAll( getRelations(imports, mClass.getPath(), mClass.getImplements()) );
+			callRelations.addAll( getRelations(imports, mClass.getFullName(), mClass.getAllVariables()) );
+			extendRelations.addAll( getRelations(imports, mClass.getFullName(), mClass.getExtends()) );
+			implementsRelations.addAll( getRelations(imports, mClass.getFullName(), mClass.getImplements()) );
 			
 			for(String type : mClass.getAllUsedTypes()) {
 				String suffix = "." + type;
@@ -87,7 +87,7 @@ public class Game {
 							ClassModel cm = this.getClassModel(path);
 							if(cm!=null) {
 								queue.offer(cm);
-								visitedPath.add(cm.getPath());
+								visitedPath.add(cm.getFullName());
 								if(path.startsWith("org.")) {
 									reusedClasses.add(cm);
 								}
@@ -131,7 +131,7 @@ public class Game {
 		
 		if(architecture.containsKey(pName)) {
 			for(ClassModel cm : architecture.get(pName)) {
-				if(path.equals( cm.getPath() )) {
+				if(path.equals( cm.getFullName() )) {
 					return cm;
 				}
 			}

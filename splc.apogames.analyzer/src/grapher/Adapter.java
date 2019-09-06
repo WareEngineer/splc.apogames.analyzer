@@ -1,124 +1,43 @@
 package grapher;
-import java.util.HashMap;
+
 import java.util.Map;
 import java.util.Set;
 
-import model.OverlapedArchitecture;
-import model.OverlapedClass;
+import architecture.OverlapedArchitecture;
+import product.RelationPool;
 
 public class Adapter {
-	private OverlapedArchitecture overlapedArchitecture;
 	
-	public Adapter(OverlapedArchitecture overlapedArchitecture) {
-		this.overlapedArchitecture = overlapedArchitecture;
-	}
-	
-	public GraphInfo getGraphInfoOfClassLevel() {
+	public GraphInfo getGraphInfo(OverlapedArchitecture olArchitecture, Map<String, Double> tccis) {
 		GraphInfo graphInfo = new GraphInfo();
-		
-		Map<String, Set<String>> callRelations = overlapedArchitecture.getCallRelations();
-		Map<String, OverlapedClass> classes = overlapedArchitecture.getClassInfo();
-		Map<String, Double> tccis = overlapedArchitecture.getTcciInfo();
-		
-		graphInfo.addNodeInfo("#GAME");
-		for(String cName : classes.keySet()) {
-			OverlapedClass c = classes.get(cName);
-			String stereoType = c.getType();
-			double tcci = tccis.get(cName);
-			graphInfo.addNodeInfo(stereoType, cName, tcci);
-		}
-		
-		for(String relation : callRelations.keySet()) {
-			String[] tokens = relation.split("->");
-			String from = tokens[0];
-			String to = tokens[1];
+		Set<String> targetClassNames = olArchitecture.getClassNames();
+		Set<String> entries = olArchitecture.getEntries();
+		Set<String> exits = olArchitecture.getExits();
+		for(String className : targetClassNames) {
+			String stereoType = null;
+			double tcci = tccis.get(className);
 			
-			double reuseRatio;
-			if(tokens[0].equals("#GAME")) {
-				reuseRatio = 1.0*callRelations.get(relation).size()/overlapedArchitecture.getTitleInfo().size();
-//				continue;
+			boolean isEntry = entries.contains(className);
+			boolean isExit = exits.contains(className);
+			if(isEntry && isExit) {
+				graphInfo.addBoundaryNode(GraphBoundaryNode.BOTH, stereoType, className, tcci);
+			} else if (isEntry) {
+				graphInfo.addBoundaryNode(GraphBoundaryNode.ENTRY, stereoType, className, tcci);
+			} else if (isExit) {
+				graphInfo.addBoundaryNode(GraphBoundaryNode.EXIT, stereoType, className, tcci);
 			} else {
-				reuseRatio = 1.0*callRelations.get(relation).size()/classes.get(tokens[0]).getTitles().size();
-//				continue;
+				graphInfo.addNormalNode(stereoType, className, tcci);
 			}
-			
-			graphInfo.addEdgeInfo(from, to, reuseRatio);
 		}
 		
-		return graphInfo;
-	}
-
-	public GraphInfo getGraphInfoOfPackageLevel() {
-		GraphInfo graphInfo = new GraphInfo();
-		Map<String, Integer> classCount = new HashMap<String, Integer>();
-		Map<String, Double> sumTcci = new HashMap<String, Double>();
-		Map<String, Integer> relationCount = new HashMap<String, Integer>();
-		Map<String, Double> sumResueRatio = new HashMap<String, Double>();
-		
-		Map<String, Set<String>> callRelations = overlapedArchitecture.getCallRelations();
-		Map<String, OverlapedClass> classes = overlapedArchitecture.getClassInfo();
-		Map<String, Double> tccis = overlapedArchitecture.getTcciInfo();
-		
-		graphInfo.addNodeInfo("#GAME");
-		for(String cName : classes.keySet()) {
-			String pName = cName.substring(0, cName.lastIndexOf("."));
-			if(classCount.containsKey(pName)==false) {
-				classCount.put(pName, 0);
+		for(String className : targetClassNames) {
+			RelationPool relationPool = olArchitecture.getUniRelations();
+			for(String to : relationPool.getCallee(className)) {
+				double p_rate = (double)olArchitecture.getClassIndidence(className)/olArchitecture.getNumOfProducts();
+				if(targetClassNames.contains(to)) {
+					graphInfo.addEdge(className, to, p_rate);
+				}
 			}
-			classCount.replace(pName, classCount.get(pName)+1);
-
-			OverlapedClass c = classes.get(cName);
-			double tcci = tccis.get(cName);
-			if(sumTcci.containsKey(pName)==false) {
-				sumTcci.put(pName, 0.0);
-			}
-			sumTcci.replace(pName, sumTcci.get(pName)+tcci);
-		}
-		for(String pName : sumTcci.keySet()) {
-			double meanTcci = sumTcci.get(pName)/classCount.get(pName);
-			graphInfo.addNodeInfo("package", pName, meanTcci);
-		}
-		
-		for(String relation : callRelations.keySet()) {
-			String[] tokens = relation.split("->");
-			String from = tokens[0];
-			String to = tokens[1];
-			
-			double reuseRatio;
-			if(tokens[0].equals("#GAME")) {
-				reuseRatio = 1.0*callRelations.get(relation).size()/overlapedArchitecture.getTitleInfo().size();
-//				continue;
-			} else {
-				reuseRatio = 1.0*callRelations.get(relation).size()/classes.get(tokens[0]).getTitles().size();
-//				continue;
-			}
-			
-			String fromPackage = from;
-			if("#GAME".equals(fromPackage)==false) {
-				fromPackage = from.substring(0, from.lastIndexOf("."));
-			}
-			String toPackage = to;
-			if("#GAME".equals(toPackage)==false) {
-				toPackage = to.substring(0, to.lastIndexOf("."));
-			}
-			String pRelation = fromPackage+"->"+toPackage;
-			if(relationCount.containsKey(pRelation)==false) {
-				relationCount.put(pRelation, 0);
-			}
-			relationCount.replace(pRelation, relationCount.get(pRelation)+1);
-
-			if(sumResueRatio.containsKey(pRelation)==false) {
-				sumResueRatio.put(pRelation, 0.0);
-			}
-			sumResueRatio.replace(pRelation, sumResueRatio.get(pRelation)+reuseRatio);
-		}
-		for(String relation : sumResueRatio.keySet()) {
-			String[] tokens = relation.split("->");
-			String from = tokens[0];
-			String to = tokens[1];
-			
-			double meanReuseRatio = sumResueRatio.get(relation)/relationCount.get(relation);
-			graphInfo.addEdgeInfo(from, to, meanReuseRatio);
 		}
 		
 		return graphInfo;

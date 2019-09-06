@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,14 +13,6 @@ import java.util.stream.Collectors;
 
 import model.ClassModel;
 import model.MethodModel;
-
-interface A {
-	public abstract void a();
-}
-
-abstract class B {
-	public abstract void b();
-}
 
 public class Parser {
 	

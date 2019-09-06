@@ -1,8 +1,6 @@
 package model;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -108,7 +106,7 @@ public class ClassModel {
 	public void addImport(String s) {
 		myImports.add(s);
 	}
-
+	
 	public void addImplicitImport(String s) {
 		myImplicitImports.add(s);
 	}
@@ -133,8 +131,11 @@ public class ClassModel {
 		return myPackage;
 	}
 
-	public Set<String> getImports() {
-		return myImports;
+	public List<String> getImports() {
+		List<String> imports = new ArrayList<String>();
+		imports.addAll(myImports);
+		imports.addAll(myImplicitImports);
+		return imports;
 	}
 	
 	public Set<String> getImplicitImports() {
@@ -165,7 +166,7 @@ public class ClassModel {
 		return myAttributes.keySet();
 	}
 	
-	public String getPath() {
+	public String getFullName() {
 		if ( "".equals(myPackage) ) {
 			return myId;
 		}

@@ -18,28 +18,32 @@ public class GraphInfo {
 		return edgeInfo;
 	}
 
-	public void addNodeInfo(String string) {
+	public void addNode(String string) {
 		GraphNode node = new GraphNode();
 		node.addText("#GAME", 20, Font.PLAIN);
 		nodeInfo.put(string, node);
 	}
 	
-	public void addNodeInfo(String stereoType, String name, double value) {
-		String strValue = String.format("%.2f", value);
-		
+	public void addNormalNode(String stereoType, String name, double value) {
 		GraphNode node = new GraphNode();
-		
-		node.addText("¡ì"+stereoType+"¡í", 12, Font.ITALIC);
+		addNode(node, stereoType, name, value);
+	}
+
+	public void addBoundaryNode(int type, String stereoType, String name, double value) {
+		GraphNode node = new GraphBoundaryNode(type);
+		addNode(node, stereoType, name, value);
+	}
+	
+	private void addNode(GraphNode node, String stereoType, String name, double value) {
 		node.addText(name, 12, Font.PLAIN);
 		node.addLine();
+		String strValue = String.format("%.2f", value);
 		node.addText(strValue, 12, Font.BOLD);
-		
 		node.setValue(value);
-		
 		nodeInfo.put(name, node);
 	}
 	
-	public void addEdgeInfo(String from, String to, double weight) {
+	public void addEdge(String from, String to, double weight) {
 		GraphNode fromNode = nodeInfo.get(from);
 		GraphNode toNode = nodeInfo.get(to);
 		GraphEdge edge = new GraphEdge(fromNode, toNode, "full", "opened", weight);

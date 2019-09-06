@@ -151,13 +151,17 @@ public class GraphEdge {
 	    
 		if(from == to) {
 			int dx = from.getWidth()/6;
-			int dy = from.getHeight()/2;
-			int[] xpoints = new int[] {x1, 	 x1-dx, x1-dx, x1+dx, x1+dx};
-			int[] ypoints = new int[] {y1+dy, y1+dy, y1-dy, y1-dy, y1};
+			int dy = from.getHeight()/3;
+//			int[] xpoints = new int[] {x1, 	 x1-dx, x1-dx, x1+dx, x1+dx};
+//			int[] ypoints = new int[] {y1+dy, y1+dy, y1-dy, y1-dy, y1};
+			int w = from.getWidth();
+			int h = from.getHeight();
+			int[] xpoints = new int[] {x1+w-dx, x1+w-dx, 	x1+w+dx, x1+w+dx, x1+w};
+			int[] ypoints = new int[] {y1, 		y1-dy-dy, 		y1-dy-dy, y1+dy, y1+dy};
 			g.drawPolyline(xpoints, ypoints, 5);
 			drawArrowHead(g, xpoints[3], ypoints[3], xpoints[4], ypoints[4]);
-			txtX = x1-dx/2;
-			txtY = y1-dy/2;
+			txtX = x1+w;
+			txtY = y1;
 		} else {
 			g.drawLine(x1, y1, x2, y2);
 			drawArrowHead(g, x1, y1, x2, y2);

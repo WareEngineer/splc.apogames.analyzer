@@ -45,6 +45,10 @@ public class MethodModel {
 		}
 	}
 	
+	public String getId() {
+		return myId;
+	}
+	
 	public void addLineNumbers(int lineNum) {
 		lineNumbers.add(lineNum);
 	}

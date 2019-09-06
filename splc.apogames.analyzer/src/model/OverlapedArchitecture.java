@@ -72,7 +72,7 @@ public class OverlapedArchitecture {
 	}
 	
 	public void addCloneInfo(String title, ClassModel cm) {
-		String cName = cm.getPath();
+		String cName = cm.getFullName();
 		if(totalCloneInfo.containsKey(cName)==false) {
 			totalCloneInfo.put(cName, new HashSet<String>());
 		}
@@ -80,7 +80,7 @@ public class OverlapedArchitecture {
 	}
 	
 	public void addReuseInfo(String title, ClassModel cm) {
-		String cName = cm.getPath();
+		String cName = cm.getFullName();
 		if(totalReuseInfo.containsKey(cName) == false) {
 			totalReuseInfo.put(cName, new HashSet<String>());
 			olClassInfo.put(cName, new OverlapedClass(cName));
